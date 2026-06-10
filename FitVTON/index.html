@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FitVTON: Fit-aware Virtual Try-On via Body-Garment Size Control</title>
+  <meta name="description" content="FitVTON is a fit-aware virtual try-on model that generates authentic garment fitting effects across diverse body shapes.">
+  <style>
+    :root {
+      --text: #1f2328;
+      --muted: #57606a;
+      --accent: #0a66c2;
+      --border: #d8dee4;
+      --bg-soft: #f6f8fa;
+      --max-width: 920px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      font-size: 17px;
+    }
+    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 20px; }
+    header { padding: 56px 0 8px; text-align: center; }
+    h1 { font-size: 2.1rem; line-height: 1.25; margin: 0 0 18px; }
+    .authors { font-size: 1.08rem; margin: 0 0 4px; }
+    .authors a { color: var(--accent); text-decoration: none; }
+    .authors a:hover { text-decoration: underline; }
+    .note { color: var(--muted); font-size: 0.92rem; margin: 0 0 22px; }
+    .links { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 36px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 18px; border-radius: 999px;
+      background: #24292f; color: #fff; text-decoration: none;
+      font-size: 0.95rem; font-weight: 500;
+      transition: background 0.15s ease;
+    }
+    .btn:hover { background: #444c56; }
+    .btn.secondary { background: var(--bg-soft); color: var(--text); border: 1px solid var(--border); }
+    .btn.secondary:hover { background: #eaeef2; }
+    section { margin: 0 0 48px; }
+    h2 {
+      font-size: 1.45rem; margin: 0 0 16px;
+      padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+    figure { margin: 0 0 12px; }
+    figure img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--border); }
+    figcaption { color: var(--muted); font-size: 0.92rem; margin-top: 10px; }
+    ul.highlights { padding-left: 22px; margin: 0; }
+    ul.highlights li { margin-bottom: 10px; }
+    .table-wrap { overflow-x: auto; }
+    table {
+      border-collapse: collapse; margin: 0 auto 10px;
+      font-size: 0.95rem; min-width: 480px;
+    }
+    th, td { padding: 8px 16px; text-align: center; border-bottom: 1px solid var(--border); }
+    thead th { background: var(--bg-soft); border-bottom: 2px solid var(--border); }
+    tr.ours { font-weight: 600; background: #f0f7ff; }
+    .table-note { color: var(--muted); font-size: 0.9rem; text-align: center; margin: 0 0 6px; }
+    pre.bibtex {
+      background: var(--bg-soft); border: 1px solid var(--border); border-radius: 8px;
+      padding: 16px 18px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5;
+    }
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px 0 40px; color: var(--muted); font-size: 0.9rem; text-align: center;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    @media (max-width: 600px) {
+      body { font-size: 16px; }
+      h1 { font-size: 1.55rem; }
+      header { padding-top: 36px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="container">
+  <h1>FitVTON: Fit-aware Virtual Try-On<br>via Body-Garment Size Control</h1>
+  <p class="authors">
+    <a href="https://zenoning.github.io/">Yiqun Ning</a>,
+    <a href="https://github.com/Shenao-code">Ao Shen</a>,
+    <a href="https://github.com/skyhehe123">Chenhang He</a><sup>&dagger;</sup>,
+    <a href="https://www4.comp.polyu.edu.hk/~cslzhang/">Lei Zhang</a>
+  </p>
+  <p class="note"><sup>&dagger;</sup> Corresponding author</p>
+  <nav class="links">
+    <a class="btn" href="https://github.com/ZenoNing/FitVTON">Code</a>
+    <a class="btn" href="https://huggingface.co/ZenoNing/FitVTON">Weights</a>
+    <a class="btn secondary" href="https://huggingface.co/datasets/ZenoNing/GarmentCodeVTONDataset">GarmentCodeVTON Dataset</a>
+    <a class="btn secondary" href="https://huggingface.co/datasets/ZenoNing/FittingEffectDataset">FittingEffect3K Benchmark</a>
+  </nav>
+</header>
+
+<main class="container">
+
+  <section>
+    <figure>
+      <img src="assets/Teaser.png" alt="FitVTON teaser: compared with prompt-driven commercial editing, FitVTON adapts hem position, tightness, and cuff elasticity to each body shape">
+      <figcaption>With garment-body size prompts, commercial editing models produce a &ldquo;neutral fit&rdquo; across different body shapes. FitVTON produces faithful fit: hem position, tightness, and cuff elasticity vary across bodies.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Abstract</h2>
+    <p>
+      FitVTON is a fit-aware virtual try-on model that generates authentic garment fitting effects
+      across diverse body shapes. FitVTON encodes garment-body size as structured text prompts
+      (e.g., <em>&ldquo;long-length upper garment&rdquo;</em> on a <em>&ldquo;slim, medium-tall body&rdquo;</em>)
+      and learns fitting dynamics from physically simulated try-on triplets. A FLUX.1 Kontext
+      flow-matching backbone is fine-tuned with modality-specific LoRA adapters and dual-branch
+      garment/body mask supervision, then rectified on real images in a second stage to bridge
+      the sim-to-real gap.
+    </p>
+  </section>
+
+  <section>
+    <h2>Method</h2>
+    <figure>
+      <img src="assets/Method.png" alt="FitVTON architecture: FLUX.1 Kontext backbone with modality-specific LoRA adapters, dual-branch mask supervision, and two-stage training">
+      <figcaption>
+        <strong>Top:</strong> Person + garment + Garment-Body Size prompt &rarr; fit-aware try-on via FLUX.1 Kontext with dual LoRA adapters and dual-branch mask supervision.
+        <strong>Bottom:</strong> Stage I fits on simulation triplets; Stage II rectifies textures on real images with the image LoRA only.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Highlights</h2>
+    <ul class="highlights">
+      <li><strong>Simulation data pipeline.</strong> GarmentCodeVTON: 78K aligned triplets from GarmentCode + Warp XPBD (19 garments &times; 16 bodies &times; 10 poses; one-piece / tucked-in / untucked).</li>
+      <li><strong>Fit-aware flow-matching.</strong> FLUX.1 Kontext with dual LoRA adapters: text controls fit geometry, image handles garment transfer.</li>
+      <li><strong>Dual-branch mask supervision.</strong> Training-only U-Net heads on garment/body masks; mask-free at inference.</li>
+      <li><strong>Texture rectification.</strong> Stage II updates image LoRA on VITON-HD / DressCode pseudo-triplets; text LoRA frozen.</li>
+      <li><strong>FittingEffect3K.</strong> Real-world benchmark (3,350 triplets) with VLM fit scoring aligned with human preference.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Results</h2>
+    <p class="table-note">Fit-oriented protocol on FittingEffect3K (GPT-scored, 1&ndash;5; category averages across GB / T-L / SC / LF)</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Upper Avg</th><th>Lower Avg</th><th>Dress Avg</th><th>Whole Avg</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>CatVTON</td><td>2.62</td><td>2.09</td><td>1.95</td><td>2.30</td></tr>
+          <tr><td>OmniTry</td><td>3.00</td><td>2.15</td><td>2.40</td><td>2.55</td></tr>
+          <tr><td>Any2AnyTryOn</td><td>2.92</td><td>2.47</td><td>1.79</td><td>2.57</td></tr>
+          <tr><td>JCo-MVTON</td><td>2.96</td><td>2.71</td><td>2.15</td><td>2.74</td></tr>
+          <tr><td>Nano Banana</td><td>3.19</td><td>2.45</td><td>2.83</td><td>2.82</td></tr>
+          <tr class="ours"><td>FitVTON</td><td>3.22</td><td>2.99</td><td>2.90</td><td>3.08</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="table-note" style="margin-top:28px;">Human preference study on FittingEffect3K (20 participants, 100 cases, 2,000 selections; best fit vs. ground truth)</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Method</th><th>Selections &uarr;</th><th>Ratio &uarr;</th></tr>
+        </thead>
+        <tbody>
+          <tr class="ours"><td>FitVTON</td><td>666</td><td>33.30%</td></tr>
+          <tr><td>Nano Banana</td><td>517</td><td>25.85%</td></tr>
+          <tr><td>JCo-MVTON</td><td>421</td><td>21.05%</td></tr>
+          <tr><td>OmniTry</td><td>163</td><td>8.15%</td></tr>
+          <tr><td>Any2AnyTryOn</td><td>147</td><td>7.35%</td></tr>
+          <tr><td>CatVTON</td><td>86</td><td>4.30%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Resources</h2>
+    <ul class="highlights">
+      <li><strong>Code:</strong> <a href="https://github.com/ZenoNing/FitVTON">github.com/ZenoNing/FitVTON</a></li>
+      <li><strong>Pretrained weights:</strong> <a href="https://huggingface.co/ZenoNing/FitVTON">huggingface.co/ZenoNing/FitVTON</a></li>
+      <li><strong>GarmentCodeVTON dataset (78K simulation triplets):</strong> <a href="https://huggingface.co/datasets/ZenoNing/GarmentCodeVTONDataset">huggingface.co/datasets/ZenoNing/GarmentCodeVTONDataset</a></li>
+      <li><strong>FittingEffect3K benchmark (3,350 real-world triplets):</strong> <a href="https://huggingface.co/datasets/ZenoNing/FittingEffectDataset">huggingface.co/datasets/ZenoNing/FittingEffectDataset</a></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>BibTeX</h2>
+    <pre class="bibtex">@article{ning2026fitvton,
+  title   = {FitVTON: Fit-aware Virtual Try-On via Body-Garment Size Control},
+  author  = {Ning, Yiqun and Shen, Ao and He, Chenhang and Zhang, Lei},
+  year    = {2026}
+}</pre>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <a href="https://zenoning.github.io/">Yiqun Ning</a> &middot; FitVTON Project Page
+  </div>
+</footer>
+
+</body>
+</html>
