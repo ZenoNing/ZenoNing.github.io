@@ -140,6 +140,39 @@
       transition: background 0.15s ease;
     }
     .nav-btn:hover { background: var(--bg-soft); }
+    #orbitTop .orbit-card, .body-holder img { cursor: pointer; }
+    /* ---- Lightbox ---- */
+    .lightbox {
+      position: fixed; inset: 0;
+      background: rgba(15, 18, 22, 0.62);
+      display: none;
+      align-items: center; justify-content: center;
+      z-index: 2000;
+      padding: 24px;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox-panel {
+      background: #fff; border-radius: 14px;
+      max-width: 540px; width: 100%;
+      padding: 24px 26px 20px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
+      text-align: center;
+      position: relative;
+    }
+    .lightbox-panel img {
+      max-height: 58vh; max-width: 100%;
+      display: block; margin: 0 auto 14px;
+      filter: drop-shadow(0 6px 14px rgba(31, 35, 40, 0.16));
+    }
+    .lightbox-title { font-weight: 600; margin: 0 0 6px; }
+    .lightbox-desc { color: var(--muted); font-size: 0.95rem; line-height: 1.5; margin: 0; }
+    .lightbox-close {
+      position: absolute; top: 8px; right: 12px;
+      border: none; background: none;
+      font-size: 1.5rem; line-height: 1;
+      cursor: pointer; color: var(--muted);
+    }
+    .lightbox-close:hover { color: var(--text); }
     @media (max-width: 600px) {
       .orbit-scene { height: 600px; }
       .orbit-layer { height: 240px; }
@@ -204,7 +237,7 @@
 
   <section id="orbit-demo">
     <h2>GarmentCodeVTON Explorer</h2>
-    <p class="demo-hint">Drag either orbit to rotate &middot; click a card to bring it to front &middot; use the arrows to switch body/pose. Top orbit: garments &middot; center: SMPL-X body &middot; bottom orbit: simulated try-on for the current body and pose.</p>
+    <p class="demo-hint">Drag either orbit to rotate &middot; click a card to bring it to front &middot; click the front garment or the center body to zoom in with its prompt &middot; use the arrows to switch body/pose. Top orbit: garments &middot; center: SMPL-X body &middot; bottom orbit: simulated try-on for the current body and pose.</p>
     <div class="orbit-scene" id="orbitScene">
       <div class="orbit-layer" id="orbitTop"></div>
       <div class="center-stage">
@@ -216,6 +249,14 @@
         <button class="nav-btn" id="nextBody" aria-label="Next body">&#9654;</button>
       </div>
       <div class="orbit-layer" id="orbitBottom"></div>
+    </div>
+    <div class="lightbox" id="lightbox">
+      <div class="lightbox-panel">
+        <button class="lightbox-close" id="lightboxClose" aria-label="Close">&times;</button>
+        <img id="lightboxImg" src="" alt="">
+        <p class="lightbox-title" id="lightboxTitle"></p>
+        <p class="lightbox-desc" id="lightboxDesc"></p>
+      </div>
     </div>
   </section>
 
@@ -316,6 +357,49 @@
   var bottomLayer = document.getElementById('orbitBottom');
   var bodyImg = document.getElementById('bodyImg');
   var bodyLabel = document.getElementById('bodyLabel');
+
+  // ---- Prompts (mirrors FitVTON/dataset.py) ----
+  // Slot -> dataset body index (femaleN used to render body_/wear_ assets).
+  var BODY_IDX = [4, 1, 3, 2, 0, 6, 9, 5, 7, 8];
+  var BODY_WIDTHS = ['slim', 'average', 'plus-size', 'heavy'];
+  var BODY_HEIGHTS = ['short', 'medium-short', 'medium-tall', 'tall'];
+  function bodyPrompt(slot) {
+    var idx = BODY_IDX[slot];
+    var shape = BODY_WIDTHS[idx % 4];
+    var height = BODY_HEIGHTS[Math.floor(idx / 4)];
+    return 'The person is a ' + height + ' and ' + shape + ' female.';
+  }
+  // Must match garment_0..4.webp (see scripts/build_body_demo_assets.py).
+  var GARMENT_TITLES = [
+    'dress2 \u00b7 one-piece',
+    'dress6 \u00b7 one-piece',
+    'upper1 + pants1 \u00b7 untucked',
+    'upper2 + pencilskirt1 \u00b7 tucked in',
+    'upper3 + circleskirt1 \u00b7 untucked'
+  ];
+  var GARMENT_PROMPTS = [
+    'The cloth is a long-length one-piece garment. The wearing style is one-piece.',
+    'The cloth is a short-length one-piece garment. The wearing style is one-piece.',
+    'The cloth is a short-length upper garment with a short-length lower garment. The wearing style is untucked.',
+    'The cloth is a short-length upper garment with a short-length lower garment. The wearing style is tucked in.',
+    'The cloth is a long-length upper garment with a short-length lower garment. The wearing style is untucked.'
+  ];
+
+  // ---- Lightbox ----
+  var lightbox = document.getElementById('lightbox');
+  var lightboxImg = document.getElementById('lightboxImg');
+  var lightboxTitle = document.getElementById('lightboxTitle');
+  var lightboxDesc = document.getElementById('lightboxDesc');
+  function openLightbox(src, title, desc) {
+    lightboxImg.src = src;
+    lightboxTitle.textContent = title;
+    lightboxDesc.textContent = desc;
+    lightbox.classList.add('open');
+  }
+  function closeLightbox() { lightbox.classList.remove('open'); }
+  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', function (e) { if (e.target === lightbox) closeLightbox(); });
+  window.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeLightbox(); });
 
   function makeCards(layer, prefix) {
     var cards = [];
@@ -424,12 +508,17 @@
   window.addEventListener('mouseup', onUp);
   window.addEventListener('touchend', onUp);
 
-  // Click a card -> rotate it to front (unless it was a drag)
-  function bindCardClicks(cards) {
+  // Click a card -> rotate it to front (unless it was a drag).
+  // If the card is already at front, fire onFrontClick (zoom + prompt).
+  function bindCardClicks(cards, onFrontClick) {
     cards.forEach(function (card) {
       card.addEventListener('click', function () {
         if (dragMoved) return;
         var i = parseInt(card.dataset.index, 10);
+        if (onFrontClick && Math.cos(angle + i * STEP) > 0.92) {
+          onFrontClick(i);
+          return;
+        }
         // bring card i to front: angle + i*STEP = 0 (mod 2pi)
         var desired = -i * STEP;
         var k = Math.round((angle - desired) / TWO_PI);
@@ -437,8 +526,23 @@
       });
     });
   }
-  bindCardClicks(topCards);
+  bindCardClicks(topCards, function (i) {
+    openLightbox(
+      demoAsset('assets/demo/garment_' + i + '.webp'),
+      GARMENT_TITLES[i],
+      GARMENT_PROMPTS[i]
+    );
+  });
   bindCardClicks(bottomCards);
+
+  // Click the center body -> zoom + body-shape prompt
+  bodyImg.addEventListener('click', function () {
+    openLightbox(
+      demoAsset('assets/demo/body_' + person + '.webp'),
+      'Body ' + (person + 1) + ' / ' + N_BODIES + ' \u00b7 pose' + person,
+      bodyPrompt(person)
+    );
+  });
 
   function setPerson(p) {
     person = (p + N_BODIES) % N_BODIES;
