@@ -30,13 +30,13 @@ BODY_SOURCES = {
 # Explorer slot i uses pose{i} (pose0 .. pose9).
 POSE_SOURCES = {slot: f"pose{slot}" for slot in BODY_SOURCES}
 
-# Must match top-orbit garment_0..4.webp (Ref units -> try-on unit/mode).
+# Must match top-orbit garment_0..4.webp (visual asset -> try-on unit/mode).
 OUTFIT_SOURCES = [
-    "dress1/one_piece",                 # garment_0
-    "dress8/one_piece",                 # garment_1
-    "upper3_circleskirt2/tucked_in",    # garment_2
-    "dress5/one_piece",                 # garment_3
-    "dress4/one_piece",                 # garment_4
+    "dress2/one_piece",                 # garment_0: blue sleeveless dress
+    "dress6/one_piece",                 # garment_1: orange short-sleeve dress
+    "upper1_pants1/untucked",           # garment_2: yellow top + beige shorts
+    "upper2_pencilskirt1/tucked_in",    # garment_3: blue top + navy pencil skirt
+    "upper3_circleskirt1/untucked",     # garment_4: pink top + light-blue circle skirt
 ]
 
 
