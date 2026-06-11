@@ -30,13 +30,13 @@ BODY_SOURCES = {
 # Explorer slot i uses pose{i} (pose0 .. pose9).
 POSE_SOURCES = {slot: f"pose{slot}" for slot in BODY_SOURCES}
 
-# Fixed outfits shown in the top / bottom orbits (unit/mode under GarmentCodeVTON_v3).
+# Must match top-orbit garment_0..4.webp (Ref units -> try-on unit/mode).
 OUTFIT_SOURCES = [
-    "dress2/one_piece",
-    "upper3_circleskirt2/tucked_in",
-    "dress1/one_piece",
-    "upper2_pencilskirt1/tucked_in",
-    "upper3_circleskirt2/untucked",
+    "dress1/one_piece",                 # garment_0
+    "dress8/one_piece",                 # garment_1
+    "upper3_circleskirt2/tucked_in",    # garment_2
+    "dress5/one_piece",                 # garment_3
+    "dress4/one_piece",                 # garment_4
 ]
 
 
@@ -87,16 +87,18 @@ def main() -> None:
         default=Path(__file__).resolve().parents[1] / "assets" / "demo",
     )
     parser.add_argument("--skip-wear", action="store_true")
+    parser.add_argument("--wear-only", action="store_true")
     args = parser.parse_args()
 
-    for slot, body_name in BODY_SOURCES.items():
-        pose_id = POSE_SOURCES[slot]
-        body_png = args.body_render_root / body_name / pose_id / "render_front.png"
-        if not body_png.exists():
-            raise SystemExit(f"Missing body render: {body_png}")
-        body_out = args.output_dir / f"body_{slot}.webp"
-        png_to_webp(body_png, body_out)
-        print(f"body_{slot}.webp <- {body_name}/{pose_id}/render_front.png")
+    if not args.wear_only:
+        for slot, body_name in BODY_SOURCES.items():
+            pose_id = POSE_SOURCES[slot]
+            body_png = args.body_render_root / body_name / pose_id / "render_front.png"
+            if not body_png.exists():
+                raise SystemExit(f"Missing body render: {body_png}")
+            body_out = args.output_dir / f"body_{slot}.webp"
+            png_to_webp(body_png, body_out)
+            print(f"body_{slot}.webp <- {body_name}/{pose_id}/render_front.png")
 
     if args.skip_wear:
         return
