@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Regenerate Explorer center body webps from GarmentCodeVTON Ref/body_render."""
+"""Regenerate Explorer demo assets with consistent body shapes.
+
+Center bodies (pose0) and bottom-orbit try-ons share the same body per slot.
+"""
 
 from __future__ import annotations
 
@@ -9,7 +12,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-# Inferred from legacy demo webp silhouettes (pose0 / render_front).
+# One body per Explorer slot; matches the original 10-shape demo grid.
 BODY_SOURCES = {
     0: "female4",
     1: "female1",
@@ -23,8 +26,17 @@ BODY_SOURCES = {
     9: "female8",
 }
 
+# Fixed outfits shown in the top / bottom orbits (unit/mode under GarmentCodeVTON_v3).
+OUTFIT_SOURCES = [
+    "dress2/one_piece",
+    "upper3_circleskirt2/tucked_in",
+    "dress1/one_piece",
+    "upper2_pencilskirt1/tucked_in",
+    "upper3_circleskirt2/untucked",
+]
 
-def png_to_body_webp(
+
+def png_to_webp(
     png_path: Path,
     webp_path: Path,
     *,
@@ -61,20 +73,45 @@ def main() -> None:
         / "body_render",
     )
     parser.add_argument(
+        "--dataset-root",
+        type=Path,
+        default=Path(__file__).resolve().parents[3] / "GarmentCodeVTON_v3",
+    )
+    parser.add_argument(
         "--output-dir",
         type=Path,
         default=Path(__file__).resolve().parents[1] / "assets" / "demo",
     )
     parser.add_argument("--pose-id", default="pose0")
+    parser.add_argument("--skip-wear", action="store_true")
     args = parser.parse_args()
 
     for slot, body_name in BODY_SOURCES.items():
-        png = args.body_render_root / body_name / args.pose_id / "render_front.png"
-        if not png.exists():
-            raise SystemExit(f"Missing source render: {png}")
-        out = args.output_dir / f"body_{slot}.webp"
-        png_to_body_webp(png, out)
+        body_png = args.body_render_root / body_name / args.pose_id / "render_front.png"
+        if not body_png.exists():
+            raise SystemExit(f"Missing body render: {body_png}")
+        body_out = args.output_dir / f"body_{slot}.webp"
+        png_to_webp(body_png, body_out)
         print(f"body_{slot}.webp <- {body_name}/{args.pose_id}/render_front.png")
+
+    if args.skip_wear:
+        return
+
+    for slot, body_name in BODY_SOURCES.items():
+        for outfit_idx, outfit_path in enumerate(OUTFIT_SOURCES):
+            wear_png = (
+                args.dataset_root
+                / "female"
+                / body_name
+                / outfit_path
+                / args.pose_id
+                / "render_front.png"
+            )
+            if not wear_png.exists():
+                raise SystemExit(f"Missing try-on render: {wear_png}")
+            wear_out = args.output_dir / f"wear_{slot}_{outfit_idx}.webp"
+            png_to_webp(wear_png, wear_out)
+            print(f"wear_{slot}_{outfit_idx}.webp <- female/{body_name}/{outfit_path}/{args.pose_id}")
 
 
 if __name__ == "__main__":
