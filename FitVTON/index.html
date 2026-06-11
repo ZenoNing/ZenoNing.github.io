@@ -144,20 +144,36 @@
     /* ---- Lightbox ---- */
     .lightbox {
       position: fixed; inset: 0;
-      background: rgba(15, 18, 22, 0.62);
-      display: none;
+      background: rgba(248, 250, 252, 0.72);
+      display: flex;
       align-items: center; justify-content: center;
       z-index: 2000;
       padding: 24px;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.28s ease, visibility 0.28s ease;
+      cursor: zoom-out;
     }
-    .lightbox.open { display: flex; }
+    .lightbox.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
     .lightbox-panel {
       background: #fff; border-radius: 14px;
       max-width: 540px; width: 100%;
       padding: 24px 26px 20px;
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
+      box-shadow: 0 16px 48px rgba(31, 35, 40, 0.14);
       text-align: center;
-      position: relative;
+      transform: scale(0.72);
+      opacity: 0;
+      transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease;
+      cursor: default;
+    }
+    .lightbox.open .lightbox-panel {
+      transform: scale(1);
+      opacity: 1;
     }
     .lightbox-panel img {
       max-height: 58vh; max-width: 100%;
@@ -166,13 +182,6 @@
     }
     .lightbox-title { font-weight: 600; margin: 0 0 6px; }
     .lightbox-desc { color: var(--muted); font-size: 0.95rem; line-height: 1.5; margin: 0; }
-    .lightbox-close {
-      position: absolute; top: 8px; right: 12px;
-      border: none; background: none;
-      font-size: 1.5rem; line-height: 1;
-      cursor: pointer; color: var(--muted);
-    }
-    .lightbox-close:hover { color: var(--text); }
     @media (max-width: 600px) {
       .orbit-scene { height: 600px; }
       .orbit-layer { height: 240px; }
@@ -251,8 +260,7 @@
       <div class="orbit-layer" id="orbitBottom"></div>
     </div>
     <div class="lightbox" id="lightbox">
-      <div class="lightbox-panel">
-        <button class="lightbox-close" id="lightboxClose" aria-label="Close">&times;</button>
+      <div class="lightbox-panel" id="lightboxPanel">
         <img id="lightboxImg" src="" alt="">
         <p class="lightbox-title" id="lightboxTitle"></p>
         <p class="lightbox-desc" id="lightboxDesc"></p>
@@ -387,6 +395,7 @@
 
   // ---- Lightbox ----
   var lightbox = document.getElementById('lightbox');
+  var lightboxPanel = document.getElementById('lightboxPanel');
   var lightboxImg = document.getElementById('lightboxImg');
   var lightboxTitle = document.getElementById('lightboxTitle');
   var lightboxDesc = document.getElementById('lightboxDesc');
@@ -394,11 +403,14 @@
     lightboxImg.src = src;
     lightboxTitle.textContent = title;
     lightboxDesc.textContent = desc;
+    lightbox.classList.remove('open');
+    void lightbox.offsetWidth;
     lightbox.classList.add('open');
   }
   function closeLightbox() { lightbox.classList.remove('open'); }
-  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
-  lightbox.addEventListener('click', function (e) { if (e.target === lightbox) closeLightbox(); });
+  lightbox.addEventListener('click', function (e) {
+    if (!lightboxPanel.contains(e.target)) closeLightbox();
+  });
   window.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeLightbox(); });
 
   function makeCards(layer, prefix) {
