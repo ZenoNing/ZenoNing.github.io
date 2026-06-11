@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Regenerate Explorer demo assets with consistent body shapes.
+"""Regenerate Explorer demo assets with consistent body shapes and poses.
 
-Center bodies (pose0) and bottom-orbit try-ons share the same body per slot.
+Each Explorer slot uses one body and one pose; center bodies and bottom-orbit
+try-ons are generated from the same body/pose pair.
 """
 
 from __future__ import annotations
@@ -25,6 +26,9 @@ BODY_SOURCES = {
     8: "female7",
     9: "female8",
 }
+
+# Explorer slot i uses pose{i} (pose0 .. pose9).
+POSE_SOURCES = {slot: f"pose{slot}" for slot in BODY_SOURCES}
 
 # Fixed outfits shown in the top / bottom orbits (unit/mode under GarmentCodeVTON_v3).
 OUTFIT_SOURCES = [
@@ -82,36 +86,40 @@ def main() -> None:
         type=Path,
         default=Path(__file__).resolve().parents[1] / "assets" / "demo",
     )
-    parser.add_argument("--pose-id", default="pose0")
     parser.add_argument("--skip-wear", action="store_true")
     args = parser.parse_args()
 
     for slot, body_name in BODY_SOURCES.items():
-        body_png = args.body_render_root / body_name / args.pose_id / "render_front.png"
+        pose_id = POSE_SOURCES[slot]
+        body_png = args.body_render_root / body_name / pose_id / "render_front.png"
         if not body_png.exists():
             raise SystemExit(f"Missing body render: {body_png}")
         body_out = args.output_dir / f"body_{slot}.webp"
         png_to_webp(body_png, body_out)
-        print(f"body_{slot}.webp <- {body_name}/{args.pose_id}/render_front.png")
+        print(f"body_{slot}.webp <- {body_name}/{pose_id}/render_front.png")
 
     if args.skip_wear:
         return
 
     for slot, body_name in BODY_SOURCES.items():
+        pose_id = POSE_SOURCES[slot]
         for outfit_idx, outfit_path in enumerate(OUTFIT_SOURCES):
             wear_png = (
                 args.dataset_root
                 / "female"
                 / body_name
                 / outfit_path
-                / args.pose_id
+                / pose_id
                 / "render_front.png"
             )
             if not wear_png.exists():
                 raise SystemExit(f"Missing try-on render: {wear_png}")
             wear_out = args.output_dir / f"wear_{slot}_{outfit_idx}.webp"
             png_to_webp(wear_png, wear_out)
-            print(f"wear_{slot}_{outfit_idx}.webp <- female/{body_name}/{outfit_path}/{args.pose_id}")
+            print(
+                f"wear_{slot}_{outfit_idx}.webp <- "
+                f"female/{body_name}/{outfit_path}/{pose_id}"
+            )
 
 
 if __name__ == "__main__":

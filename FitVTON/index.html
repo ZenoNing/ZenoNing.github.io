@@ -195,14 +195,14 @@
 
   <section id="orbit-demo">
     <h2>GarmentCodeVTON Explorer</h2>
-    <p class="demo-hint">Drag either orbit to rotate &middot; click a card to bring it to front &middot; use the arrows to switch body. Top orbit: garments &middot; center: SMPL-X body &middot; bottom orbit: simulated try-on for the current body.</p>
+    <p class="demo-hint">Drag either orbit to rotate &middot; click a card to bring it to front &middot; use the arrows to switch body/pose. Top orbit: garments &middot; center: SMPL-X body &middot; bottom orbit: simulated try-on for the current body and pose.</p>
     <div class="orbit-scene" id="orbitScene">
       <div class="orbit-layer" id="orbitTop"></div>
       <div class="center-stage">
         <button class="nav-btn" id="prevBody" aria-label="Previous body">&#9664;</button>
         <div class="body-holder">
-          <img id="bodyImg" src="assets/demo/body_0.webp?v=3" alt="SMPL-X body">
-          <div class="body-label" id="bodyLabel">Body 1 / 10</div>
+          <img id="bodyImg" src="assets/demo/body_0.webp?v=4" alt="SMPL-X body">
+          <div class="body-label" id="bodyLabel">Body 1 / 10 &middot; pose0</div>
         </div>
         <button class="nav-btn" id="nextBody" aria-label="Next body">&#9654;</button>
       </div>
@@ -294,7 +294,7 @@
 
 <script>
 (function () {
-  var DEMO_VER = '3';
+  var DEMO_VER = '4';
   var demoAsset = function (path) { return path + '?v=' + DEMO_VER; };
   var N_BODIES = 10, N_OUTFITS = 5;
   var TWO_PI = Math.PI * 2, STEP = TWO_PI / N_OUTFITS;
@@ -427,7 +427,7 @@
       bottomCards.forEach(function (card, i) {
         card.querySelector('img').src = demoAsset('assets/demo/wear_' + person + '_' + i + '.webp');
       });
-      bodyLabel.textContent = 'Body ' + (person + 1) + ' / ' + N_BODIES;
+      bodyLabel.textContent = 'Body ' + (person + 1) + ' / ' + N_BODIES + ' · pose' + person;
       bodyImg.style.opacity = 1;
     }, 160);
   }
