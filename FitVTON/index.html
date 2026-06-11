@@ -85,7 +85,7 @@
     }
     .orbit-layer { position: absolute; left: 0; width: 100%; height: 320px; cursor: grab; }
     .orbit-layer.dragging { cursor: grabbing; }
-    #orbitTop { top: 0; }
+    #orbitTop { top: -28px; }
     #orbitBottom { bottom: 0; }
     .orbit-card {
       position: absolute;
@@ -107,12 +107,19 @@
       pointer-events: none;
       filter: drop-shadow(0 4px 10px rgba(31, 35, 40, 0.14));
     }
+    #orbitTop .orbit-card {
+      width: 92px; height: 124px;
+      margin: -62px 0 0 -46px;
+    }
+    #orbitTop .orbit-card img {
+      object-position: top center;
+    }
     .center-stage {
       position: absolute;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       display: flex; align-items: center; gap: 14px;
-      z-index: 500;
+      z-index: 800;
     }
     .body-holder { position: relative; text-align: center; }
     .body-holder img {
@@ -138,6 +145,8 @@
       .orbit-layer { height: 240px; }
       .body-holder img { height: 160px; }
       .orbit-card { width: 86px; height: 118px; margin: -59px 0 0 -43px; }
+      #orbitTop .orbit-card { width: 72px; height: 98px; margin: -49px 0 0 -36px; }
+      #orbitTop { top: -18px; }
     }
     footer {
       border-top: 1px solid var(--border);
@@ -201,7 +210,7 @@
       <div class="center-stage">
         <button class="nav-btn" id="prevBody" aria-label="Previous body">&#9664;</button>
         <div class="body-holder">
-          <img id="bodyImg" src="assets/demo/body_0.webp?v=4" alt="SMPL-X body">
+          <img id="bodyImg" src="assets/demo/body_0.webp?v=5" alt="SMPL-X body">
           <div class="body-label" id="bodyLabel">Body 1 / 10 &middot; pose0</div>
         </div>
         <button class="nav-btn" id="nextBody" aria-label="Next body">&#9654;</button>
@@ -294,7 +303,7 @@
 
 <script>
 (function () {
-  var DEMO_VER = '4';
+  var DEMO_VER = '5';
   var demoAsset = function (path) { return path + '?v=' + DEMO_VER; };
   var N_BODIES = 10, N_OUTFITS = 5;
   var TWO_PI = Math.PI * 2, STEP = TWO_PI / N_OUTFITS;
@@ -333,28 +342,40 @@
     for (var k = 0; k < N_OUTFITS; k++) new Image().src = demoAsset('assets/demo/wear_' + n + '_' + k + '.webp');
   }
 
-  function layout() {
+  function layoutOrbit(cards, opts) {
     var w = scene.clientWidth;
-    var rx = Math.min(w * 0.40, 360);  // horizontal radius
-    var ry = 38;                        // vertical radius (ellipse squash)
+    var rx = Math.min(w * opts.rxFactor, opts.rxMax);
     for (var i = 0; i < N_OUTFITS; i++) {
       var th = angle + i * STEP;
       var s = Math.sin(th), c = Math.cos(th);
-      // c = 1 -> front center
-      var depth = (c + 1) / 2;                 // 0 back .. 1 front
-      var scale = 0.55 + depth * 0.95;          // front enlarged ~1.5x
+      var depth = (c + 1) / 2;
+      var scale = opts.scaleMin + depth * opts.scaleRange;
       var x = s * rx;
-      var y = c * ry;
-      var op = 0.45 + depth * 0.55;
+      var y = c * opts.ry + opts.yBias;
+      var op = opts.opacityMin + depth * opts.opacityRange;
       var transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + scale.toFixed(3) + ')';
-      var z = Math.round(depth * 400);
-      topCards[i].style.transform = transform;
-      topCards[i].style.zIndex = z;
-      topCards[i].style.opacity = op;
-      bottomCards[i].style.transform = transform;
-      bottomCards[i].style.zIndex = z;
-      bottomCards[i].style.opacity = op;
+      var z = Math.round(depth * opts.zMax);
+      cards[i].style.transform = transform;
+      cards[i].style.zIndex = z;
+      cards[i].style.opacity = op;
     }
+  }
+
+  function layout() {
+    layoutOrbit(topCards, {
+      rxFactor: 0.40, rxMax: 360,
+      ry: 16, yBias: -42,
+      scaleMin: 0.48, scaleRange: 0.52,
+      opacityMin: 0.42, opacityRange: 0.50,
+      zMax: 300
+    });
+    layoutOrbit(bottomCards, {
+      rxFactor: 0.40, rxMax: 360,
+      ry: 38, yBias: 0,
+      scaleMin: 0.55, scaleRange: 0.95,
+      opacityMin: 0.45, opacityRange: 0.55,
+      zMax: 400
+    });
   }
 
   function animate() {
