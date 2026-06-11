@@ -33,13 +33,17 @@
     .btn {
       display: inline-flex; align-items: center; gap: 7px;
       padding: 8px 18px; border-radius: 999px;
-      background: #24292f; color: #fff; text-decoration: none;
+      color: #fff; text-decoration: none;
       font-size: 0.95rem; font-weight: 500;
-      transition: background 0.15s ease;
+      border: 1px solid transparent;
+      transition: filter 0.15s ease, transform 0.15s ease;
     }
-    .btn:hover { background: #444c56; }
-    .btn.secondary { background: var(--bg-soft); color: var(--text); border: 1px solid var(--border); }
-    .btn.secondary:hover { background: #eaeef2; }
+    .btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .btn-paper   { background: #b31b1b; border-color: #9a1717; }
+    .btn-code    { background: #24292f; border-color: #1b1f23; }
+    .btn-weights { background: #ff9d00; color: #1a1200; border-color: #e08c00; }
+    .btn-dataset { background: #0a7ea4; border-color: #086688; }
+    .btn-bench   { background: #6f42c1; border-color: #5e37a6; }
     section { margin: 0 0 48px; }
     h2 {
       font-size: 1.45rem; margin: 0 0 16px;
@@ -87,10 +91,11 @@
   </p>
   <p class="note"><sup>&dagger;</sup> Corresponding author</p>
   <nav class="links">
-    <a class="btn" href="https://github.com/ZenoNing/FitVTON">Code</a>
-    <a class="btn" href="https://huggingface.co/ZenoNing/FitVTON">Weights</a>
-    <a class="btn secondary" href="https://huggingface.co/datasets/ZenoNing/GarmentCodeVTONDataset">GarmentCodeVTON Dataset</a>
-    <a class="btn secondary" href="https://huggingface.co/datasets/ZenoNing/FittingEffectDataset">FittingEffect3K Benchmark</a>
+    <a class="btn btn-paper" href="https://arxiv.org/abs/2606.12012">Paper</a>
+    <a class="btn btn-code" href="https://github.com/ZenoNing/FitVTON">Code</a>
+    <a class="btn btn-weights" href="https://huggingface.co/ZenoNing/FitVTON">Weights</a>
+    <a class="btn btn-dataset" href="https://huggingface.co/datasets/ZenoNing/GarmentCodeVTONDataset">GarmentCodeVTON</a>
+    <a class="btn btn-bench" href="https://huggingface.co/datasets/ZenoNing/FittingEffectDataset">FittingEffect3K</a>
   </nav>
 </header>
 
@@ -178,6 +183,7 @@
   <section>
     <h2>Resources</h2>
     <ul class="highlights">
+      <li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2606.12012">arXiv:2606.12012</a></li>
       <li><strong>Code:</strong> <a href="https://github.com/ZenoNing/FitVTON">github.com/ZenoNing/FitVTON</a></li>
       <li><strong>Pretrained weights:</strong> <a href="https://huggingface.co/ZenoNing/FitVTON">huggingface.co/ZenoNing/FitVTON</a></li>
       <li><strong>GarmentCodeVTON dataset (78K simulation triplets):</strong> <a href="https://huggingface.co/datasets/ZenoNing/GarmentCodeVTONDataset">huggingface.co/datasets/ZenoNing/GarmentCodeVTONDataset</a></li>
@@ -190,6 +196,7 @@
     <pre class="bibtex">@article{ning2026fitvton,
   title   = {FitVTON: Fit-aware Virtual Try-On via Body-Garment Size Control},
   author  = {Ning, Yiqun and Shen, Ao and He, Chenhang and Zhang, Lei},
+  journal = {arXiv preprint arXiv:2606.12012},
   year    = {2026}
 }</pre>
   </section>
