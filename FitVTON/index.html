@@ -67,6 +67,78 @@
       background: var(--bg-soft); border: 1px solid var(--border); border-radius: 8px;
       padding: 16px 18px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5;
     }
+    /* ---- GarmentCodeVTON orbit demo ---- */
+    .demo-hint { color: var(--muted); font-size: 0.92rem; text-align: center; margin: 0 0 8px; }
+    .orbit-scene {
+      position: relative;
+      height: 760px;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: pan-y;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background:
+        radial-gradient(ellipse 60% 24% at 50% 21%, #eef4fb 0%, transparent 70%),
+        radial-gradient(ellipse 60% 24% at 50% 79%, #eef4fb 0%, transparent 70%),
+        linear-gradient(#fcfdfe, #f6f8fa);
+    }
+    .orbit-layer { position: absolute; left: 0; width: 100%; height: 320px; cursor: grab; }
+    .orbit-layer.dragging { cursor: grabbing; }
+    #orbitTop { top: 0; }
+    #orbitBottom { bottom: 0; }
+    .orbit-card {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 120px; height: 160px;
+      margin: -80px 0 0 -60px;
+      border-radius: 10px;
+      background: #fff;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 14px rgba(31, 35, 40, 0.10);
+      overflow: hidden;
+      will-change: transform, opacity;
+      pointer-events: auto;
+    }
+    .orbit-card img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      padding: 6px;
+      display: block;
+      pointer-events: none;
+    }
+    .center-stage {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex; align-items: center; gap: 14px;
+      z-index: 500;
+    }
+    .body-holder { position: relative; text-align: center; }
+    .body-holder img {
+      height: 230px; width: auto; display: block; margin: 0 auto;
+      filter: drop-shadow(0 6px 12px rgba(31, 35, 40, 0.18));
+      transition: opacity 0.18s ease;
+    }
+    .body-label { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
+    .nav-btn {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      font-size: 0.9rem;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(31, 35, 40, 0.10);
+      transition: background 0.15s ease;
+    }
+    .nav-btn:hover { background: var(--bg-soft); }
+    @media (max-width: 600px) {
+      .orbit-scene { height: 600px; }
+      .orbit-layer { height: 240px; }
+      .body-holder img { height: 160px; }
+      .orbit-card { width: 86px; height: 118px; margin: -59px 0 0 -43px; }
+    }
     footer {
       border-top: 1px solid var(--border);
       padding: 24px 0 40px; color: var(--muted); font-size: 0.9rem; text-align: center;
@@ -119,6 +191,23 @@
       garment/body mask supervision, then rectified on real images in a second stage to bridge
       the sim-to-real gap.
     </p>
+  </section>
+
+  <section id="orbit-demo">
+    <h2>GarmentCodeVTON Explorer</h2>
+    <p class="demo-hint">Drag either orbit to rotate &middot; click a card to bring it to front &middot; use the arrows to switch body. Top orbit: garments &middot; center: SMPL-X body &middot; bottom orbit: simulated try-on for the current body.</p>
+    <div class="orbit-scene" id="orbitScene">
+      <div class="orbit-layer" id="orbitTop"></div>
+      <div class="center-stage">
+        <button class="nav-btn" id="prevBody" aria-label="Previous body">&#9664;</button>
+        <div class="body-holder">
+          <img id="bodyImg" src="assets/demo/body_0.webp" alt="SMPL-X body">
+          <div class="body-label" id="bodyLabel">Body 1 / 10</div>
+        </div>
+        <button class="nav-btn" id="nextBody" aria-label="Next body">&#9654;</button>
+      </div>
+      <div class="orbit-layer" id="orbitBottom"></div>
+    </div>
   </section>
 
   <section>
@@ -202,6 +291,151 @@
   </section>
 
 </main>
+
+<script>
+(function () {
+  var N_BODIES = 10, N_OUTFITS = 5;
+  var TWO_PI = Math.PI * 2, STEP = TWO_PI / N_OUTFITS;
+  var person = 0;
+  var angle = 0, targetAngle = 0;
+  var dragging = false, dragStartX = 0, dragStartAngle = 0, dragMoved = false;
+
+  var scene = document.getElementById('orbitScene');
+  var topLayer = document.getElementById('orbitTop');
+  var bottomLayer = document.getElementById('orbitBottom');
+  var bodyImg = document.getElementById('bodyImg');
+  var bodyLabel = document.getElementById('bodyLabel');
+
+  function makeCards(layer, prefix) {
+    var cards = [];
+    for (var i = 0; i < N_OUTFITS; i++) {
+      var card = document.createElement('div');
+      card.className = 'orbit-card';
+      card.dataset.index = i;
+      var img = document.createElement('img');
+      img.src = prefix(i);
+      img.alt = '';
+      card.appendChild(img);
+      layer.appendChild(card);
+      cards.push(card);
+    }
+    return cards;
+  }
+
+  var topCards = makeCards(topLayer, function (i) { return 'assets/demo/garment_' + i + '.webp'; });
+  var bottomCards = makeCards(bottomLayer, function (i) { return 'assets/demo/wear_' + person + '_' + i + '.webp'; });
+
+  // Preload all assets
+  for (var n = 0; n < N_BODIES; n++) {
+    new Image().src = 'assets/demo/body_' + n + '.webp';
+    for (var k = 0; k < N_OUTFITS; k++) new Image().src = 'assets/demo/wear_' + n + '_' + k + '.webp';
+  }
+
+  function layout() {
+    var w = scene.clientWidth;
+    var rx = Math.min(w * 0.40, 360);  // horizontal radius
+    var ry = 38;                        // vertical radius (ellipse squash)
+    for (var i = 0; i < N_OUTFITS; i++) {
+      var th = angle + i * STEP;
+      var s = Math.sin(th), c = Math.cos(th);
+      // c = 1 -> front center
+      var depth = (c + 1) / 2;                 // 0 back .. 1 front
+      var scale = 0.55 + depth * 0.95;          // front enlarged ~1.5x
+      var x = s * rx;
+      var y = c * ry;
+      var op = 0.45 + depth * 0.55;
+      var transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + scale.toFixed(3) + ')';
+      var z = Math.round(depth * 400);
+      topCards[i].style.transform = transform;
+      topCards[i].style.zIndex = z;
+      topCards[i].style.opacity = op;
+      bottomCards[i].style.transform = transform;
+      bottomCards[i].style.zIndex = z;
+      bottomCards[i].style.opacity = op;
+    }
+  }
+
+  function animate() {
+    if (!dragging) {
+      var diff = targetAngle - angle;
+      if (Math.abs(diff) > 0.0005) angle += diff * 0.14;
+      else angle = targetAngle;
+    }
+    layout();
+    requestAnimationFrame(animate);
+  }
+
+  function snap() {
+    targetAngle = Math.round(angle / STEP) * STEP;
+  }
+
+  function onDown(e) {
+    dragging = true; dragMoved = false;
+    dragStartX = (e.touches ? e.touches[0].clientX : e.clientX);
+    dragStartAngle = angle;
+    topLayer.classList.add('dragging');
+    bottomLayer.classList.add('dragging');
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    var x = (e.touches ? e.touches[0].clientX : e.clientX);
+    var dx = x - dragStartX;
+    if (Math.abs(dx) > 4) dragMoved = true;
+    angle = dragStartAngle + dx / 160;
+    if (e.cancelable && dragMoved) e.preventDefault();
+  }
+  function onUp() {
+    if (!dragging) return;
+    dragging = false;
+    topLayer.classList.remove('dragging');
+    bottomLayer.classList.remove('dragging');
+    snap();
+  }
+
+  [topLayer, bottomLayer].forEach(function (layer) {
+    layer.addEventListener('mousedown', onDown);
+    layer.addEventListener('touchstart', onDown, { passive: true });
+  });
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('mouseup', onUp);
+  window.addEventListener('touchend', onUp);
+
+  // Click a card -> rotate it to front (unless it was a drag)
+  function bindCardClicks(cards) {
+    cards.forEach(function (card) {
+      card.addEventListener('click', function () {
+        if (dragMoved) return;
+        var i = parseInt(card.dataset.index, 10);
+        // bring card i to front: angle + i*STEP = 0 (mod 2pi)
+        var desired = -i * STEP;
+        var k = Math.round((angle - desired) / TWO_PI);
+        targetAngle = desired + k * TWO_PI;
+      });
+    });
+  }
+  bindCardClicks(topCards);
+  bindCardClicks(bottomCards);
+
+  function setPerson(p) {
+    person = (p + N_BODIES) % N_BODIES;
+    bodyImg.style.opacity = 0;
+    setTimeout(function () {
+      bodyImg.src = 'assets/demo/body_' + person + '.webp';
+      bottomCards.forEach(function (card, i) {
+        card.querySelector('img').src = 'assets/demo/wear_' + person + '_' + i + '.webp';
+      });
+      bodyLabel.textContent = 'Body ' + (person + 1) + ' / ' + N_BODIES;
+      bodyImg.style.opacity = 1;
+    }, 160);
+  }
+  document.getElementById('prevBody').addEventListener('click', function () { setPerson(person - 1); });
+  document.getElementById('nextBody').addEventListener('click', function () { setPerson(person + 1); });
+
+  window.addEventListener('resize', layout);
+  animate();
+})();
+</script>
 
 <footer>
   <div class="container">
