@@ -94,7 +94,11 @@
       border-color: var(--accent);
       box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.12);
     }
-    .garment-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; }
+    .garment-thumb img {
+      width: 100%; height: 100%;
+      object-fit: contain; object-position: top center;
+      display: block; pointer-events: none;
+    }
     .pose-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 18px; }
     .pose-btn {
       padding: 5px 18px;
@@ -117,10 +121,22 @@
       filter: drop-shadow(0 6px 14px rgba(31, 35, 40, 0.16));
       transition: opacity 0.15s ease;
     }
+    .stage-col-garment {
+      flex: 0 0 auto;
+      width: 150px;
+      height: 400px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+    }
     .stage-col-garment img {
-      height: 290px;
-      max-width: 118px;
+      height: 320px;
+      width: auto;
+      max-width: 150px;
       object-fit: contain;
+      object-position: top center;
+      margin: 0;
     }
     .stage-label { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
     .body-caption { text-align: center; color: var(--muted); font-size: 0.9rem; margin: 14px 0 6px; }
@@ -141,27 +157,22 @@
       z-index: 2;
       pointer-events: none;
     }
-    .filmstrip-wrap::after {
-      content: '';
-      position: absolute;
-      top: 8px; bottom: 8px;
-      left: 50%;
-      width: 2px;
-      margin-left: -1px;
-      background: rgba(10, 102, 194, 0.22);
-      border-radius: 1px;
-      pointer-events: none;
-    }
     .filmstrip {
       display: flex; gap: 8px;
       overflow-x: auto;
       padding: 10px 0 8px;
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
-      scrollbar-width: thin;
+      scrollbar-width: none;
       cursor: grab;
+      touch-action: pan-x;
     }
-    .filmstrip.dragging { cursor: grabbing; scroll-snap-type: none; }
+    .filmstrip::-webkit-scrollbar { display: none; }
+    .filmstrip.dragging {
+      cursor: grabbing;
+      scroll-snap-type: none;
+      user-select: none;
+    }
     .film-thumb {
       flex: 0 0 auto;
       height: 108px;
@@ -226,7 +237,8 @@
     @media (max-width: 600px) {
       .stage { gap: 14px; }
       .stage-col img { height: 260px; }
-      .stage-col-garment img { height: 200px; max-width: 88px; }
+      .stage-col-garment { width: 110px; height: 260px; }
+      .stage-col-garment img { height: 220px; max-width: 110px; }
       .garment-thumb { width: 60px; height: 80px; }
       .film-thumb { height: 84px; }
     }
@@ -292,15 +304,15 @@
       <div class="pose-row" id="poseRow"></div>
       <div class="stage">
         <div class="stage-col stage-col-garment">
-          <img id="garmentImg" src="assets/demo/garment_0.webp?v=8" alt="Reference garment">
+          <img id="garmentImg" src="assets/demo/garment_0.webp?v=9" alt="Reference garment">
           <div class="stage-label">Garment</div>
         </div>
         <div class="stage-col">
-          <img id="bodyImg" src="assets/demo/body_0_p1.webp?v=8" alt="SMPL-X body">
+          <img id="bodyImg" src="assets/demo/body_0_p1.webp?v=9" alt="SMPL-X body">
           <div class="stage-label" id="bodyLabel">Body 1 / 10</div>
         </div>
         <div class="stage-col">
-          <img id="wearImg" src="assets/demo/wear_0_0_p1.webp?v=8" alt="Simulated try-on">
+          <img id="wearImg" src="assets/demo/wear_0_0_p1.webp?v=9" alt="Simulated try-on">
           <div class="stage-label">Try-on</div>
         </div>
       </div>
@@ -403,7 +415,7 @@
 
 <script>
 (function () {
-  var DEMO_VER = '8';
+  var DEMO_VER = '9';
   var demoAsset = function (path) { return path + '?v=' + DEMO_VER; };
   var N_BODIES = 10, N_OUTFITS = 5;
   var POSES = [1, 3, 7];
@@ -516,9 +528,6 @@
     filmImg.src = demoAsset(bodyPath(n, pose));
     filmImg.alt = '';
     film.appendChild(filmImg);
-    film.addEventListener('click', function () {
-      scrollToPerson(parseInt(this.dataset.index, 10), true);
-    });
     filmstrip.appendChild(film);
     filmThumbs.push(film);
   }
@@ -660,6 +669,46 @@
       GARMENT_TITLES[garment] + ' on ' + bodyName(person),
       bodyPrompt(person) + ' ' + GARMENT_PROMPTS[garment]
     );
+  });
+
+  var filmDragging = false, filmDragMoved = false, filmDragX = 0, filmDragScroll = 0;
+  function onFilmDragDown(e) {
+    if (e.button !== undefined && e.button !== 0) return;
+    filmDragging = true;
+    filmDragMoved = false;
+    filmDragX = e.pageX || (e.touches && e.touches[0].pageX);
+    filmDragScroll = filmstrip.scrollLeft;
+    filmstrip.classList.add('dragging');
+  }
+  function onFilmDragMove(e) {
+    if (!filmDragging) return;
+    var x = e.pageX || (e.touches && e.touches[0].pageX);
+    var dx = x - filmDragX;
+    if (Math.abs(dx) > 3) filmDragMoved = true;
+    filmstrip.scrollLeft = filmDragScroll - dx;
+    if (e.cancelable && filmDragMoved) e.preventDefault();
+  }
+  function onFilmDragUp() {
+    if (!filmDragging) return;
+    filmDragging = false;
+    filmstrip.classList.remove('dragging');
+    if (filmDragMoved) window.setTimeout(function () { filmDragMoved = false; }, 0);
+  }
+  filmstrip.addEventListener('mousedown', onFilmDragDown);
+  window.addEventListener('mousemove', onFilmDragMove);
+  window.addEventListener('mouseup', onFilmDragUp);
+  filmstrip.addEventListener('touchstart', onFilmDragDown, { passive: true });
+  window.addEventListener('touchmove', onFilmDragMove, { passive: false });
+  window.addEventListener('touchend', onFilmDragUp);
+
+  filmThumbs.forEach(function (film) {
+    film.addEventListener('click', function (e) {
+      if (filmDragMoved) {
+        e.preventDefault();
+        return;
+      }
+      scrollToPerson(parseInt(this.dataset.index, 10), true);
+    });
   });
 
   filmstrip.addEventListener('scroll', onFilmstripScroll, { passive: true });
