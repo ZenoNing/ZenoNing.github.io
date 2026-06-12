@@ -86,6 +86,9 @@
       background: #fff;
       font: inherit;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       box-shadow: 0 1px 4px rgba(31, 35, 40, 0.08);
       transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
     }
@@ -96,7 +99,7 @@
     }
     .garment-thumb img {
       width: 100%; height: 100%;
-      object-fit: contain; object-position: top center;
+      object-fit: contain; object-position: center center;
       display: block; pointer-events: none;
     }
     .pose-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 18px; }
@@ -139,7 +142,6 @@
       margin: 0;
     }
     .stage-label { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
-    .body-caption { text-align: center; color: var(--muted); font-size: 0.9rem; margin: 14px 0 6px; }
     .filmstrip-wrap {
       position: relative;
       margin: 0 -4px;
@@ -316,7 +318,6 @@
           <div class="stage-label">Try-on</div>
         </div>
       </div>
-      <p class="body-caption" id="bodyCaption">female4 &middot; Pose1</p>
       <div class="filmstrip-wrap">
         <div class="filmstrip-pointer" aria-hidden="true"></div>
         <div class="filmstrip" id="filmstrip"></div>
@@ -428,7 +429,6 @@
   var bodyImg = document.getElementById('bodyImg');
   var wearImg = document.getElementById('wearImg');
   var bodyLabel = document.getElementById('bodyLabel');
-  var bodyCaption = document.getElementById('bodyCaption');
   var garmentRow = document.getElementById('garmentRow');
   var poseRow = document.getElementById('poseRow');
   var filmstrip = document.getElementById('filmstrip');
@@ -576,7 +576,6 @@
 
   function updateLabels() {
     bodyLabel.textContent = 'Body ' + (person + 1) + ' / ' + N_BODIES;
-    bodyCaption.textContent = bodyName(person) + ' \u00b7 ' + poseLabel(pose);
   }
 
   function updateStage() {
@@ -707,7 +706,7 @@
         e.preventDefault();
         return;
       }
-      scrollToPerson(parseInt(this.dataset.index, 10), true);
+      setPerson(parseInt(this.dataset.index, 10), false);
     });
   });
 
