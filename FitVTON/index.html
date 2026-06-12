@@ -22,7 +22,7 @@
       line-height: 1.6;
       font-size: 17px;
     }
-    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 20px; }
+    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 20px; overflow-x: visible; }
     header { padding: 56px 0 8px; text-align: center; }
     h1 { font-size: 2.1rem; line-height: 1.25; margin: 0 0 18px; }
     .authors { font-size: 1.08rem; margin: 0 0 4px; }
@@ -51,6 +51,15 @@
     }
     figure { margin: 0 0 12px; }
     figure img { width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--border); }
+    .figure-wide {
+      width: min(1080px, calc(100vw - 40px));
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .figure-teaser {
+      width: min(1500px, calc(100vw - 40px));
+    }
     figcaption { color: var(--muted); font-size: 0.92rem; margin-top: 10px; }
     ul.highlights { padding-left: 22px; margin: 0; }
     ul.highlights li { margin-bottom: 10px; }
@@ -204,6 +213,13 @@
     }
     .film-thumb img { height: 100%; width: auto; display: block; pointer-events: none; }
     /* ---- Real-person fit evaluation demo ---- */
+    #fitting-demo .demo-panel {
+      width: min(1200px, calc(100vw - 40px));
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 22px 28px 20px;
+    }
     .fe-controls {
       display: flex;
       gap: 28px;
@@ -248,15 +264,24 @@
       display: block; pointer-events: none;
     }
     .fe-option-name { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
-    .fe-stage { display: flex; gap: 18px; align-items: stretch; }
+    .fe-stage { display: flex; gap: 24px; align-items: stretch; }
     .fe-images {
       display: flex;
-      gap: 14px;
+      gap: 18px;
       align-items: flex-end;
       justify-content: center;
       flex: 0 0 auto;
     }
     .fe-img-card { text-align: center; }
+    .fe-images-wrap { flex: 0 0 auto; }
+    .fe-measures {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+    .fe-measures strong { color: var(--text); font-weight: 600; }
     .fe-img-box {
       position: relative;
       border: 1px solid var(--border);
@@ -264,8 +289,8 @@
       background: #fff;
       overflow: hidden;
     }
-    .fe-img-gt .fe-img-box { width: 168px; height: 224px; }
-    .fe-img-pred .fe-img-box { width: 240px; height: 320px; }
+    .fe-img-gt .fe-img-box { width: 200px; height: 267px; }
+    .fe-img-pred .fe-img-box { width: 285px; height: 380px; }
     .fe-img-box img {
       width: 100%; height: 100%;
       object-fit: cover;
@@ -301,7 +326,7 @@
     .fe-img-label strong { color: var(--text); }
     .fe-scores {
       flex: 1 1 auto;
-      min-width: 0;
+      min-width: 320px;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -356,8 +381,250 @@
     @media (max-width: 760px) {
       .fe-stage { flex-direction: column; align-items: center; }
       .fe-scores { width: 100%; }
-      .fe-img-gt .fe-img-box { width: 132px; height: 176px; }
-      .fe-img-pred .fe-img-box { width: 192px; height: 256px; }
+      #fitting-demo .demo-panel {
+        width: auto;
+        left: auto;
+        transform: none;
+        padding: 18px 18px 16px;
+      }
+      .fe-scores { min-width: 0; }
+      .fe-img-gt .fe-img-box { width: 150px; height: 200px; }
+      .fe-img-pred .fe-img-box { width: 214px; height: 285px; }
+    }
+    /* ---- Fit Comparison filmstrip ---- */
+    #fit-comparison {
+      --fc-img-h: 230px;
+      --fc-gap: 10px;
+      --fc-panel-pad: 36px;
+      --fc-strip-w: calc(9 * (var(--fc-img-h) * 768 / 1024) + 8 * var(--fc-gap));
+      width: calc(var(--fc-strip-w) + var(--fc-panel-pad));
+      max-width: calc(100vw - 40px);
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .fc-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+    .fc-arrow {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      font-size: 1rem;
+      line-height: 1;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+    .fc-arrow:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .fc-counter { color: var(--muted); font-size: 0.92rem; min-width: 96px; text-align: center; }
+    .fc-strip {
+      display: flex;
+      gap: var(--fc-gap);
+      justify-content: center;
+      overflow-x: visible;
+      padding: 6px 0 10px;
+    }
+    .fc-card { flex: 0 0 auto; text-align: center; min-width: 0; }
+    .fc-card img {
+      height: var(--fc-img-h); width: auto;
+      display: block;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      cursor: zoom-in;
+      transition: opacity 0.25s ease;
+    }
+    .fc-card.ours img { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.12); }
+    .fc-card-label { color: var(--muted); font-size: 0.78rem; margin-top: 5px; }
+    .fc-card.ours .fc-card-label { color: var(--accent); font-weight: 600; }
+    .fc-strip.switching img { opacity: 0; }
+    @media (max-width: 1708px) {
+      #fit-comparison {
+        --fc-img-h: calc((100vw - 40px - var(--fc-panel-pad) - 8 * var(--fc-gap)) * 1024 / (9 * 768));
+        left: auto;
+        transform: none;
+        width: auto;
+        max-width: none;
+      }
+    }
+    @media (max-width: 600px) {
+      #fit-comparison { --fc-img-h: 150px; }
+      .fc-strip { overflow-x: auto; justify-content: flex-start; scrollbar-width: thin; }
+    }
+    /* ---- Quality Comparison filmstrip (7 columns) ---- */
+    #quality-comparison {
+      --fc-img-h: 230px;
+      --fc-gap: 10px;
+      --fc-panel-pad: 36px;
+      --fc-strip-w: calc(7 * (var(--fc-img-h) * 768 / 1024) + 6 * var(--fc-gap));
+      width: calc(var(--fc-strip-w) + var(--fc-panel-pad));
+      max-width: calc(100vw - 40px);
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    @media (max-width: 1340px) {
+      #quality-comparison {
+        --fc-img-h: calc((100vw - 40px - var(--fc-panel-pad) - 6 * var(--fc-gap)) * 1024 / (7 * 768));
+        left: auto;
+        transform: none;
+        width: auto;
+        max-width: none;
+      }
+    }
+    @media (max-width: 600px) {
+      #quality-comparison { --fc-img-h: 150px; }
+      #quality-comparison .fc-strip { overflow-x: auto; justify-content: flex-start; scrollbar-width: thin; }
+    }
+    /* ---- Wild Image Try-On ---- */
+    #wild-demo {
+      --wd-count: 7;
+      --wd-gap: 12px;
+      --wd-panel-pad-x: 56px;
+      --wd-border: 4px;
+      --wd-img-h: min(
+        290px,
+        calc((100vw - 40px - var(--wd-panel-pad-x) - (var(--wd-count) - 1) * var(--wd-gap) - var(--wd-count) * var(--wd-border)) * 1024 / (var(--wd-count) * 768))
+      );
+      --wd-strip-w: calc(var(--wd-count) * (var(--wd-img-h) * 768 / 1024 + var(--wd-border)) + (var(--wd-count) - 1) * var(--wd-gap));
+    }
+    #wild-demo .demo-panel {
+      width: min(calc(var(--wd-strip-w) + var(--wd-panel-pad-x)), calc(100vw - 40px));
+      max-width: calc(100vw - 40px);
+      margin: 0 auto;
+      padding: 24px 28px 22px;
+    }
+    .wd-toolbar {
+      display: flex;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .wd-gender { display: flex; gap: 8px; }
+    .wd-garment-row { display: flex; gap: 16px; justify-content: center; margin-bottom: 18px; }
+    #wild-demo .wd-garment-row .fe-option {
+      width: 88px;
+      padding: 6px 6px 4px;
+    }
+    #wild-demo .wd-garment-row .fe-option img {
+      height: 96px;
+    }
+    .wd-strip {
+      display: flex;
+      gap: var(--wd-gap);
+      justify-content: center;
+      overflow-x: hidden;
+      padding: 8px 0 12px;
+    }
+    .wd-card { flex: 0 0 auto; text-align: center; }
+    .wd-card img {
+      height: var(--wd-img-h); width: auto;
+      display: block;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+      cursor: zoom-in;
+      transition: opacity 0.25s ease, transform 0.15s ease;
+    }
+    .wd-card img:hover { transform: translateY(-2px); }
+    .wd-card-label { color: var(--muted); font-size: 0.78rem; margin-top: 5px; }
+    .wd-strip.switching img { opacity: 0; }
+    @media (min-width: 1560px) {
+      #wild-demo .demo-panel {
+        position: relative;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+    }
+    @media (max-width: 600px) {
+      #wild-demo { --wd-panel-pad-x: 32px; }
+      #wild-demo .demo-panel { padding: 18px 16px 16px; }
+      #wild-demo .wd-garment-row .fe-option { width: 72px; }
+      #wild-demo .wd-garment-row .fe-option img { height: 78px; }
+    }
+    .wd-lightbox {
+      position: fixed; inset: 0;
+      background: rgba(248, 250, 252, 0.78);
+      display: flex;
+      align-items: center; justify-content: center;
+      z-index: 2100;
+      padding: 24px;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.28s ease, visibility 0.28s ease;
+      cursor: zoom-out;
+    }
+    .wd-lightbox.open { opacity: 1; visibility: visible; pointer-events: auto; }
+    .wd-panel {
+      background: #fff; border-radius: 14px;
+      padding: 26px;
+      box-shadow: 0 16px 48px rgba(31, 35, 40, 0.16);
+      display: flex;
+      gap: 24px;
+      align-items: stretch;
+      max-width: 92vw;
+      transform: scale(0.8);
+      opacity: 0;
+      transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.26s ease;
+      cursor: default;
+    }
+    .wd-lightbox.open .wd-panel { transform: scale(1); opacity: 1; }
+    .wd-main {
+      position: relative;
+      flex: 0 0 auto;
+    }
+    .wd-main > img {
+      height: min(78vh, 780px);
+      width: auto; max-width: 64vw;
+      display: block;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .wd-inputs {
+      position: absolute;
+      top: 10px; left: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .wd-inputs figure {
+      margin: 0;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px;
+      box-shadow: 0 2px 8px rgba(31, 35, 40, 0.14);
+    }
+    .wd-inputs img { height: 165px; width: auto; display: block; border-radius: 5px; }
+    .wd-info {
+      flex: 0 0 auto;
+      width: 240px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+    }
+    .wd-info h3 { margin: 0; font-size: 1.25rem; }
+    .wd-info .wd-height {
+      font-size: 1.05rem;
+      color: var(--text);
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+    }
+    .wd-info .wd-height strong { color: var(--accent); }
+    .wd-info p { margin: 0; color: var(--muted); font-size: 0.92rem; line-height: 1.5; }
+    @media (max-width: 760px) {
+      .wd-panel { flex-direction: column; max-width: 94vw; }
+      .wd-main > img { max-width: 86vw; height: auto; max-height: 56vh; }
+      .wd-info { width: auto; }
     }
     /* ---- Lightbox ---- */
     .lightbox {
@@ -443,10 +710,41 @@
 <main class="container">
 
   <section>
-    <figure>
+    <figure class="figure-wide figure-teaser">
       <img src="assets/Teaser.png" alt="FitVTON teaser: compared with prompt-driven commercial editing, FitVTON adapts hem position, tightness, and cuff elasticity to each body shape">
       <figcaption>With garment-body size prompts, commercial editing models produce a &ldquo;neutral fit&rdquo; across different body shapes. FitVTON produces faithful fit: hem position, tightness, and cuff elasticity vary across bodies.</figcaption>
     </figure>
+  </section>
+
+  <section id="wild-demo">
+    <h2>Wild Image Try-On</h2>
+    <p class="demo-hint">FitVTON on unconstrained celebrity photos &middot; switch <strong>Female / Male</strong> &middot; pick a <strong>garment</strong> &middot; <strong>CLICK</strong> a result to <strong>ZOOM IN</strong></p>
+    <div class="demo-panel">
+      <div class="wd-toolbar">
+        <div class="wd-gender" id="wdGenderRow">
+          <button type="button" class="pose-btn active" data-gender="f">Female</button>
+          <button type="button" class="pose-btn" data-gender="m">Male</button>
+        </div>
+      </div>
+      <div class="wd-garment-row" id="wdGarmentRow"></div>
+      <div class="wd-strip" id="wdStrip"></div>
+    </div>
+    <div class="wd-lightbox" id="wdLightbox">
+      <div class="wd-panel" id="wdPanel">
+        <div class="wd-main">
+          <img id="wdBigImg" src="" alt="Wild try-on result">
+          <div class="wd-inputs">
+            <figure><img id="wdSrcThumb" src="" alt="Source person"></figure>
+            <figure><img id="wdClothThumb" src="" alt="Garment"></figure>
+          </div>
+        </div>
+        <div class="wd-info">
+          <h3 id="wdName"></h3>
+          <div class="wd-height">Height: <strong id="wdHeight"></strong></div>
+          <p id="wdDesc"></p>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section>
@@ -498,7 +796,7 @@
 
   <section>
     <h2>Method</h2>
-    <figure>
+    <figure class="figure-wide figure-teaser">
       <img src="assets/Method.png" alt="FitVTON architecture: FLUX.1 Kontext backbone with modality-specific LoRA adapters, dual-branch mask supervision, and two-stage training">
       <figcaption>
         <strong>Top:</strong> Person + garment + Garment-Body Size prompt &rarr; fit-aware try-on via FLUX.1 Kontext with dual LoRA adapters and dual-branch mask supervision.
@@ -540,7 +838,9 @@
         </div>
       </div>
       <div class="fe-stage">
-        <div class="fe-images">
+        <div class="fe-images-wrap">
+          <div class="fe-measures" id="feMeasures"></div>
+          <div class="fe-images">
           <div class="fe-img-card fe-img-gt">
             <div class="fe-img-box" id="feGtBox">
               <img id="feGtImg" src="" alt="Real try-on reference">
@@ -554,6 +854,7 @@
               <div class="fe-wait" id="fePredWait"><div class="fe-spinner"></div><span id="fePredWaitText">Pick a person &amp; garment</span></div>
             </div>
             <div class="fe-img-label"><strong>Image B</strong><br>FitVTON generated result</div>
+          </div>
           </div>
         </div>
         <div class="fe-scores">
@@ -621,6 +922,32 @@
           <tr><td>CatVTON</td><td>86</td><td>4.30%</td></tr>
         </tbody>
       </table>
+    </div>
+  </section>
+
+  <section id="fit-comparison">
+    <h2>Fit Comparison</h2>
+    <p class="demo-hint">Qualitative comparison on FittingEffect3K &middot; use the <strong>arrows</strong> to switch cases &middot; <strong>CLICK</strong> an image to <strong>ZOOM IN</strong></p>
+    <div class="demo-panel">
+      <div class="fc-bar">
+        <button type="button" class="fc-arrow" id="fcPrev" aria-label="Previous case">&#9664;</button>
+        <div class="fc-counter" id="fcCounter">Case 1 / 11</div>
+        <button type="button" class="fc-arrow" id="fcNext" aria-label="Next case">&#9654;</button>
+      </div>
+      <div class="fc-strip" id="fcStrip"></div>
+    </div>
+  </section>
+
+  <section id="quality-comparison">
+    <h2>Quality Comparison</h2>
+    <p class="demo-hint">Texture quality on DressCode &amp; VITON-HD &middot; use the <strong>arrows</strong> to switch cases &middot; <strong>CLICK</strong> an image to <strong>ZOOM IN</strong></p>
+    <div class="demo-panel">
+      <div class="fc-bar">
+        <button type="button" class="fc-arrow" id="qcPrev" aria-label="Previous case">&#9664;</button>
+        <div class="fc-counter" id="qcCounter">Case 1 / 11</div>
+        <button type="button" class="fc-arrow" id="qcNext" aria-label="Next case">&#9654;</button>
+      </div>
+      <div class="fc-strip" id="qcStrip"></div>
     </div>
   </section>
 
@@ -962,6 +1289,7 @@
 })();
 </script>
 
+<script src="assets/fitting/measurements.js?v=1"></script>
 <script src="assets/fitting/scores.js?v=4"></script>
 <script>
 (function () {
@@ -976,6 +1304,17 @@
 
   function personName(s) { return GENDERS[s.charAt(0)].label + '_' + s.slice(1); }
   function clothName(c) { return c.charAt(0).toUpperCase() + c.slice(1).replace('_', ' '); }
+
+  function formatMeasures(personId) {
+    var m = window.FE_MEASURES && window.FE_MEASURES[personId];
+    if (!m) return '';
+    return '<strong>' + personName(personId) + '</strong> &middot; Height ' + m.height + ' cm &middot; Chest '
+      + m.chest + ' &middot; Waist ' + m.waist + ' &middot; Bust ' + m.bust + ' cm';
+  }
+
+  function updateMeasures() {
+    document.getElementById('feMeasures').innerHTML = formatMeasures(src);
+  }
 
   var srcRow = document.getElementById('feSrcRow');
   var clothRow = document.getElementById('feClothRow');
@@ -1080,6 +1419,7 @@
     var entry = window.FE_SCORES[key];
     markActive();
     fillScores(entry);
+    updateMeasures();
 
     predBox.classList.remove('show');
     gtBox.classList.remove('show');
@@ -1137,7 +1477,325 @@
   });
 
   buildRows();
+  updateMeasures();
   run();
+})();
+</script>
+
+<script>
+(function () {
+  var BASE = 'assets/comparison/';
+  var VER = '?v=2';
+  var N_GROUPS = 11;
+  var COLS = [
+    { key: 'person', label: 'Person' },
+    { key: 'garment', label: 'Garment' },
+    { key: 'cat', label: 'CatVTON' },
+    { key: 'omni', label: 'OmniTry' },
+    { key: 'any', label: 'Any2AnyTryOn' },
+    { key: 'jco', label: 'JCo-MVTON' },
+    { key: 'nano', label: 'Nano Banana' },
+    { key: 'fitvton', label: 'FitVTON (Ours)', ours: true },
+    { key: 'GT', label: 'GT' }
+  ];
+
+  var strip = document.getElementById('fcStrip');
+  var counter = document.getElementById('fcCounter');
+  var group = 0;
+
+  var lightbox = document.getElementById('lightbox');
+  function fcLightbox(src, title) {
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightboxTitle').textContent = title;
+    document.getElementById('lightboxDesc').textContent = '';
+    lightbox.classList.remove('open');
+    void lightbox.offsetWidth;
+    lightbox.classList.add('open');
+  }
+
+  var cards = COLS.map(function (col) {
+    var card = document.createElement('div');
+    card.className = 'fc-card' + (col.ours ? ' ours' : '');
+    var img = document.createElement('img');
+    img.alt = col.label;
+    img.addEventListener('click', function () {
+      fcLightbox(img.src, col.label + ' \u00b7 Case ' + (group + 1) + ' / ' + N_GROUPS);
+    });
+    var label = document.createElement('div');
+    label.className = 'fc-card-label';
+    label.textContent = col.label;
+    card.appendChild(img);
+    card.appendChild(label);
+    strip.appendChild(card);
+    return img;
+  });
+
+  function show(g) {
+    group = (g + N_GROUPS) % N_GROUPS;
+    counter.textContent = 'Case ' + (group + 1) + ' / ' + N_GROUPS;
+    strip.classList.add('switching');
+    setTimeout(function () {
+      COLS.forEach(function (col, i) {
+        cards[i].src = BASE + 'g' + group + '_' + col.key + '.webp' + VER;
+      });
+      strip.classList.remove('switching');
+      strip.scrollTo({ left: 0, behavior: 'auto' });
+    }, 180);
+  }
+
+  document.getElementById('fcPrev').addEventListener('click', function () { show(group - 1); });
+  document.getElementById('fcNext').addEventListener('click', function () { show(group + 1); });
+
+  for (var g = 0; g < N_GROUPS; g++) {
+    COLS.forEach(function (col) {
+      new Image().src = BASE + 'g' + g + '_' + col.key + '.webp' + VER;
+    });
+  }
+
+  counter.textContent = 'Case 1 / ' + N_GROUPS;
+  COLS.forEach(function (col, i) {
+    cards[i].src = BASE + 'g0_' + col.key + '.webp' + VER;
+  });
+})();
+</script>
+
+<script>
+(function () {
+  var VER = '?v=3';
+  var GENDERS = {
+    f: {
+      base: 'assets/wild/',
+      persons: [
+        { id: 'Adele', height: '176 cm' },
+        { id: 'Jialing', height: '166 cm' },
+        { id: 'Natalie', height: '160 cm' },
+        { id: 'Rihanna', height: '173 cm' },
+        { id: 'Songyi', height: '168 cm' },
+        { id: 'Taylor', height: '176 cm' },
+        { id: 'Xiongdailin', height: '179 cm' }
+      ],
+      garments: [
+        { id: 'dress_0', label: 'Dress 0 (short-length)' },
+        { id: 'dress_1', label: 'Dress 1 (long-length)' }
+      ]
+    },
+    m: {
+      base: 'assets/wild/male/',
+      persons: [
+        { id: 'Daniel', height: '165 cm' },
+        { id: 'Gabriel', height: '173 cm' },
+        { id: 'Jacob', height: '165 cm' },
+        { id: 'Jason', height: '193 cm' },
+        { id: 'Jinzhongguo', height: '178 cm' },
+        { id: 'Linshuhao', height: '191 cm' },
+        { id: 'TomCruise', height: '172 cm' }
+      ],
+      garments: [
+        { id: 'upper_0', label: 'Upper 0 (short-length)' },
+        { id: 'upper_1', label: 'Upper 1 (short-length)' }
+      ]
+    }
+  };
+
+  var wildDemo = document.getElementById('wild-demo');
+  var genderRow = document.getElementById('wdGenderRow');
+  var garmentRow = document.getElementById('wdGarmentRow');
+  var strip = document.getElementById('wdStrip');
+  var lightbox = document.getElementById('wdLightbox');
+  var panel = document.getElementById('wdPanel');
+  var bigImg = document.getElementById('wdBigImg');
+  var srcThumb = document.getElementById('wdSrcThumb');
+  var clothThumb = document.getElementById('wdClothThumb');
+  var nameEl = document.getElementById('wdName');
+  var heightEl = document.getElementById('wdHeight');
+  var descEl = document.getElementById('wdDesc');
+
+  var gender = 'f';
+  var garment = GENDERS.f.garments[0].id;
+  var garmentBtns = [];
+  var cards = [];
+
+  function cfg() { return GENDERS[gender]; }
+
+  function outSrc(person, g) {
+    return cfg().base + 'out_' + person.id + '_' + g + '.webp' + VER;
+  }
+
+  function buildGarmentRow() {
+    garmentRow.innerHTML = '';
+    garmentBtns = cfg().garments.map(function (g) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'fe-option' + (g.id === garment ? ' active' : '');
+      btn.dataset.id = g.id;
+      var img = document.createElement('img');
+      img.src = cfg().base + 'cloth_' + g.id + '.webp' + VER;
+      img.alt = g.label;
+      btn.appendChild(img);
+      btn.addEventListener('click', function () {
+        if (garment === g.id) return;
+        garment = g.id;
+        garmentBtns.forEach(function (b) { b.classList.toggle('active', b.dataset.id === garment); });
+        refreshStrip();
+      });
+      garmentRow.appendChild(btn);
+      return btn;
+    });
+  }
+
+  function buildStrip() {
+    strip.innerHTML = '';
+    cards = cfg().persons.map(function (p) {
+      var card = document.createElement('div');
+      card.className = 'wd-card';
+      var img = document.createElement('img');
+      img.alt = p.id + ' try-on';
+      img.src = outSrc(p, garment);
+      img.addEventListener('click', function () { openBox(p); });
+      card.appendChild(img);
+      strip.appendChild(card);
+      return img;
+    });
+    wildDemo.style.setProperty('--wd-count', String(cfg().persons.length));
+  }
+
+  function refreshStrip() {
+    strip.classList.add('switching');
+    setTimeout(function () {
+      cfg().persons.forEach(function (p, i) {
+        cards[i].src = outSrc(p, garment);
+      });
+      strip.classList.remove('switching');
+    }, 160);
+  }
+
+  function openBox(person) {
+    var g = cfg().garments.filter(function (x) { return x.id === garment; })[0];
+    bigImg.src = outSrc(person, garment);
+    srcThumb.src = cfg().base + 'src_' + person.id + '.webp' + VER;
+    clothThumb.src = cfg().base + 'cloth_' + garment + '.webp' + VER;
+    nameEl.textContent = person.id;
+    heightEl.textContent = person.height;
+    descEl.textContent = 'FitVTON try-on of ' + g.label.toLowerCase() + ' on a wild photo of ' + person.id + '.';
+    lightbox.classList.remove('open');
+    void lightbox.offsetWidth;
+    lightbox.classList.add('open');
+  }
+
+  function preload(gkey) {
+    var c = GENDERS[gkey];
+    c.persons.forEach(function (p) {
+      new Image().src = c.base + 'src_' + p.id + '.webp' + VER;
+      c.garments.forEach(function (g) {
+        new Image().src = c.base + 'out_' + p.id + '_' + g.id + '.webp' + VER;
+      });
+    });
+    c.garments.forEach(function (g) {
+      new Image().src = c.base + 'cloth_' + g.id + '.webp' + VER;
+    });
+  }
+
+  function switchGender(g) {
+    if (gender === g) return;
+    gender = g;
+    garment = cfg().garments[0].id;
+    genderRow.querySelectorAll('.pose-btn').forEach(function (btn) {
+      btn.classList.toggle('active', btn.dataset.gender === gender);
+    });
+    buildGarmentRow();
+    buildStrip();
+    preload(gender);
+  }
+
+  genderRow.querySelectorAll('.pose-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () { switchGender(btn.dataset.gender); });
+  });
+
+  lightbox.addEventListener('click', function (e) {
+    if (!panel.contains(e.target)) lightbox.classList.remove('open');
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') lightbox.classList.remove('open');
+  });
+
+  buildGarmentRow();
+  buildStrip();
+  preload('f');
+  preload('m');
+})();
+</script>
+
+<script>
+(function () {
+  var BASE = 'assets/quality/';
+  var VER = '?v=1';
+  var N_GROUPS = 11;
+  var SETS = ['DressCode', 'DressCode', 'VITON-HD', 'VITON-HD',
+    'Supp.', 'Supp.', 'Supp.', 'Supp.', 'Supp.', 'Supp.', 'Supp.'];
+  var COLS = [
+    { key: 'person', label: 'Person' },
+    { key: 'garment', label: 'Garment' },
+    { key: 'cat', label: 'CatVTON' },
+    { key: 'omni', label: 'OmniTry' },
+    { key: 'any', label: 'Any2AnyTryOn' },
+    { key: 'jco', label: 'JCo-MVTON' },
+    { key: 'fitvton', label: 'FitVTON (Ours)', ours: true }
+  ];
+
+  var strip = document.getElementById('qcStrip');
+  var counter = document.getElementById('qcCounter');
+  var group = 0;
+  var lightbox = document.getElementById('lightbox');
+
+  function qcLightbox(src, title) {
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightboxTitle').textContent = title;
+    document.getElementById('lightboxDesc').textContent = '';
+    lightbox.classList.remove('open');
+    void lightbox.offsetWidth;
+    lightbox.classList.add('open');
+  }
+
+  var cards = COLS.map(function (col) {
+    var card = document.createElement('div');
+    card.className = 'fc-card' + (col.ours ? ' ours' : '');
+    var img = document.createElement('img');
+    img.alt = col.label;
+    img.addEventListener('click', function () {
+      qcLightbox(img.src, col.label + ' \u00b7 ' + SETS[group] + ' \u00b7 Case ' + (group + 1) + ' / ' + N_GROUPS);
+    });
+    var label = document.createElement('div');
+    label.className = 'fc-card-label';
+    label.textContent = col.label;
+    card.appendChild(img);
+    card.appendChild(label);
+    strip.appendChild(card);
+    return img;
+  });
+
+  function show(g) {
+    group = (g + N_GROUPS) % N_GROUPS;
+    counter.textContent = SETS[group] + ' \u00b7 Case ' + (group + 1) + ' / ' + N_GROUPS;
+    strip.classList.add('switching');
+    setTimeout(function () {
+      COLS.forEach(function (col, i) {
+        cards[i].src = BASE + 'g' + group + '_' + col.key + '.webp' + VER;
+      });
+      strip.classList.remove('switching');
+      strip.scrollTo({ left: 0, behavior: 'auto' });
+    }, 180);
+  }
+
+  document.getElementById('qcPrev').addEventListener('click', function () { show(group - 1); });
+  document.getElementById('qcNext').addEventListener('click', function () { show(group + 1); });
+
+  for (var g = 0; g < N_GROUPS; g++) {
+    COLS.forEach(function (col) {
+      new Image().src = BASE + 'g' + g + '_' + col.key + '.webp' + VER;
+    });
+  }
+
+  show(0);
 })();
 </script>
 
