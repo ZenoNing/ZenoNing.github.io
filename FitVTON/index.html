@@ -220,7 +220,12 @@
       letter-spacing: 0.04em;
       margin-bottom: 8px;
     }
-    .fe-options { display: flex; gap: 10px; justify-content: center; }
+    .fe-options { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .fe-gender {
+      display: flex; gap: 8px;
+      justify-content: center; align-items: center;
+      min-height: 104px;
+    }
     .fe-option {
       width: 72px;
       padding: 5px 5px 3px;
@@ -518,6 +523,13 @@
     <p class="demo-hint">Pick a <strong>source person</strong> and a <strong>garment</strong> &middot; FitVTON generates the try-on, then the real-wearing reference and VLM fit scores appear &middot; <strong>CLICK</strong> a score card to expand</p>
     <div class="demo-panel">
       <div class="fe-controls">
+        <div class="fe-group">
+          <div class="fe-group-label">Dataset</div>
+          <div class="fe-gender" id="feGenderRow">
+            <button type="button" class="pose-btn active" data-gender="f">Female</button>
+            <button type="button" class="pose-btn" data-gender="m">Male</button>
+          </div>
+        </div>
         <div class="fe-group">
           <div class="fe-group-label">Source person</div>
           <div class="fe-options" id="feSrcRow"></div>
@@ -950,22 +962,20 @@
 })();
 </script>
 
-<script src="assets/fitting/scores.js?v=1"></script>
+<script src="assets/fitting/scores.js?v=2"></script>
 <script>
 (function () {
   var BASE = 'assets/fitting/';
-  var VER = '?v=1';
-  var SOURCES = [
-    { id: 'f0', name: 'female_0', img: 'src_f0.webp' },
-    { id: 'f3', name: 'female_3', img: 'src_f3.webp' }
-  ];
-  var CLOTHES = [
-    { id: 'upper_1', name: 'Upper 1', img: 'cloth_upper_1.webp' },
-    { id: 'upper_2', name: 'Upper 2', img: 'cloth_upper_2.webp' },
-    { id: 'lower_1', name: 'Lower 1', img: 'cloth_lower_1.webp' },
-    { id: 'lower_2', name: 'Lower 2', img: 'cloth_lower_2.webp' }
-  ];
+  var VER = '?v=2';
+  var GENDERS = {
+    f: { label: 'female', cloths: ['upper_1', 'upper_2', 'lower_1', 'lower_2'] },
+    m: { label: 'male', cloths: ['upper_1', 'upper_2', 'upper_3', 'lower_1', 'lower_2', 'lower_3'] }
+  };
+  var N_PERSONS = 5;
   var DIMS = ['gb', 'tl', 'sc', 'lf'];
+
+  function personName(s) { return GENDERS[s.charAt(0)].label + '_' + s.slice(1); }
+  function clothName(c) { return c.charAt(0).toUpperCase() + c.slice(1).replace('_', ' '); }
 
   var srcRow = document.getElementById('feSrcRow');
   var clothRow = document.getElementById('feClothRow');
@@ -997,27 +1007,55 @@
     lightbox.classList.add('open');
   }
 
-  var src = 'f0', cloth = 'upper_1', runToken = 0;
+  var gender = 'f', src = 'f0', cloth = 'upper_1', runToken = 0;
+  var srcBtns = [], clothBtns = [];
 
-  function makeOption(row, item, onPick) {
+  function makeOption(row, id, label, imgFile, onPick) {
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'fe-option';
-    btn.dataset.id = item.id;
+    btn.dataset.id = id;
     var img = document.createElement('img');
-    img.src = BASE + item.img + VER;
-    img.alt = item.name;
+    img.src = BASE + imgFile + VER;
+    img.alt = label;
     var name = document.createElement('div');
     name.className = 'fe-option-name';
-    name.textContent = item.name;
+    name.textContent = label;
     btn.appendChild(img);
     btn.appendChild(name);
-    btn.addEventListener('click', function () { onPick(item.id); });
+    btn.addEventListener('click', function () { onPick(id); });
     row.appendChild(btn);
     return btn;
   }
-  var srcBtns = SOURCES.map(function (s) { return makeOption(srcRow, s, function (id) { src = id; run(); }); });
-  var clothBtns = CLOTHES.map(function (c) { return makeOption(clothRow, c, function (id) { cloth = id; run(); }); });
+
+  function buildRows() {
+    srcRow.innerHTML = '';
+    clothRow.innerHTML = '';
+    srcBtns = [];
+    clothBtns = [];
+    for (var i = 0; i < N_PERSONS; i++) {
+      var id = gender + i;
+      srcBtns.push(makeOption(srcRow, id, personName(id), 'src_' + id + '.webp',
+        function (picked) { src = picked; run(); }));
+    }
+    GENDERS[gender].cloths.forEach(function (c) {
+      clothBtns.push(makeOption(clothRow, c, clothName(c), 'cloth_' + gender + '_' + c + '.webp',
+        function (picked) { cloth = picked; run(); }));
+    });
+  }
+
+  var genderBtns = Array.prototype.slice.call(document.querySelectorAll('#feGenderRow .pose-btn'));
+  genderBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      if (gender === this.dataset.gender) return;
+      gender = this.dataset.gender;
+      src = gender + '0';
+      cloth = 'upper_1';
+      genderBtns.forEach(function (b) { b.classList.toggle('active', b.dataset.gender === gender); });
+      buildRows();
+      run();
+    });
+  });
 
   function markActive() {
     srcBtns.forEach(function (b) { b.classList.toggle('active', b.dataset.id === src); });
@@ -1080,22 +1118,25 @@
   }
 
   predImg.addEventListener('click', function () {
-    var c = CLOTHES.filter(function (x) { return x.id === cloth; })[0];
-    feLightbox(predImg.src, 'FitVTON result \u00b7 ' + src.replace('f', 'female_') + ' + ' + c.name,
-      'Generated try-on (Image B) for ' + c.name.toLowerCase() + ' on ' + src.replace('f', 'female_') + '.');
+    feLightbox(predImg.src, 'FitVTON result \u00b7 ' + personName(src) + ' + ' + clothName(cloth),
+      'Generated try-on (Image B) for ' + clothName(cloth).toLowerCase() + ' on ' + personName(src) + '.');
   });
   gtImg.addEventListener('click', function () {
-    feLightbox(gtImg.src, 'Ground truth \u00b7 ' + src.replace('f', 'female_'),
+    feLightbox(gtImg.src, 'Ground truth \u00b7 ' + personName(src),
       'Real try-on reference photo (Image A) from FittingEffect3K.');
   });
 
-  SOURCES.forEach(function (s) {
-    CLOTHES.forEach(function (c) {
-      new Image().src = BASE + 'pred_' + s.id + '_' + c.id + '.webp' + VER;
-      new Image().src = BASE + 'gt_' + s.id + '_' + c.id + '.webp' + VER;
-    });
+  Object.keys(GENDERS).forEach(function (g) {
+    for (var i = 0; i < N_PERSONS; i++) {
+      new Image().src = BASE + 'src_' + g + i + '.webp' + VER;
+      GENDERS[g].cloths.forEach(function (c) {
+        new Image().src = BASE + 'pred_' + g + i + '_' + c + '.webp' + VER;
+        new Image().src = BASE + 'gt_' + g + i + '_' + c + '.webp' + VER;
+      });
+    }
   });
 
+  buildRows();
   run();
 })();
 </script>
