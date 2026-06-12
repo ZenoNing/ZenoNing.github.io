@@ -67,80 +67,95 @@
       background: var(--bg-soft); border: 1px solid var(--border); border-radius: 8px;
       padding: 16px 18px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5;
     }
-    /* ---- GarmentCodeVTON orbit demo ---- */
+    /* ---- Fit Explorer demo ---- */
     .demo-hint { color: var(--muted); font-size: 0.92rem; text-align: center; margin: 0 0 8px; }
-    .orbit-scene {
-      position: relative;
-      height: 760px;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: pan-y;
-      overflow: hidden;
+    .demo-panel {
       border: 1px solid var(--border);
       border-radius: 12px;
-      background:
-        radial-gradient(ellipse 60% 24% at 50% 21%, #eef4fb 0%, transparent 70%),
-        radial-gradient(ellipse 60% 24% at 50% 79%, #eef4fb 0%, transparent 70%),
-        linear-gradient(#fcfdfe, #f6f8fa);
+      background: linear-gradient(#fcfdfe, #f6f8fa);
+      padding: 18px 18px 16px;
+      user-select: none;
+      -webkit-user-select: none;
     }
-    .orbit-layer { position: absolute; left: 0; width: 100%; height: 320px; cursor: grab; }
-    .orbit-layer.dragging { cursor: grabbing; }
-    #orbitTop { top: -28px; }
-    #orbitBottom { bottom: 0; }
-    .orbit-card {
-      position: absolute;
-      top: 50%; left: 50%;
-      width: 120px; height: 160px;
-      margin: -80px 0 0 -60px;
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      overflow: visible;
-      will-change: transform, opacity;
-      pointer-events: auto;
+    .garment-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px; }
+    .garment-thumb {
+      width: 76px; height: 100px;
+      padding: 7px;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      background: #fff;
+      font: inherit;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(31, 35, 40, 0.08);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
     }
-    .orbit-card img {
-      width: 100%; height: 100%;
-      object-fit: contain;
-      padding: 0;
-      display: block;
-      pointer-events: none;
-      filter: drop-shadow(0 4px 10px rgba(31, 35, 40, 0.14));
+    .garment-thumb:hover { transform: translateY(-2px); }
+    .garment-thumb.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.12);
     }
-    #orbitTop .orbit-card {
-      width: 92px; height: 124px;
-      margin: -62px 0 0 -46px;
-    }
-    #orbitTop .orbit-card img {
-      object-position: top center;
-    }
-    .center-stage {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      display: flex; align-items: center; gap: 14px;
-      z-index: 800;
-    }
-    .body-holder { position: relative; text-align: center; }
-    .body-holder img {
-      height: 230px; width: auto; display: block; margin: 0 auto;
-      filter: drop-shadow(0 6px 12px rgba(31, 35, 40, 0.18));
-      transition: opacity 0.18s ease;
-    }
-    .body-label { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
-    .nav-btn {
-      width: 40px; height: 40px;
-      border-radius: 50%;
+    .garment-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; pointer-events: none; }
+    .pose-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 18px; }
+    .pose-btn {
+      padding: 5px 18px;
+      border-radius: 999px;
       border: 1px solid var(--border);
       background: #fff;
       color: var(--text);
       font-size: 0.9rem;
       cursor: pointer;
-      box-shadow: 0 2px 8px rgba(31, 35, 40, 0.10);
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+    .pose-btn:hover { background: var(--bg-soft); }
+    .pose-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .stage { display: flex; justify-content: center; align-items: flex-end; gap: 34px; }
+    .stage-col { text-align: center; min-width: 0; }
+    .stage-col img {
+      height: 400px; width: auto; max-width: 100%;
+      display: block; margin: 0 auto;
+      cursor: zoom-in;
+      filter: drop-shadow(0 6px 14px rgba(31, 35, 40, 0.16));
+      transition: opacity 0.15s ease;
+    }
+    .stage-label { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
+    .body-control {
+      display: flex; align-items: center; gap: 12px;
+      max-width: 460px; margin: 16px auto 2px;
+    }
+    .body-control input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
+    .nav-btn {
+      width: 34px; height: 34px; flex: 0 0 auto;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      font-size: 0.8rem;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(31, 35, 40, 0.10);
       transition: background 0.15s ease;
     }
     .nav-btn:hover { background: var(--bg-soft); }
-    #orbitTop .orbit-card, .body-holder img { cursor: pointer; }
+    .body-caption { text-align: center; color: var(--muted); font-size: 0.9rem; margin: 4px 0 12px; }
+    .filmstrip {
+      display: flex; gap: 6px;
+      overflow-x: auto;
+      padding: 6px 2px 8px;
+      justify-content: safe center;
+    }
+    .film-thumb {
+      flex: 0 0 auto;
+      height: 108px;
+      padding: 3px;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      background: #fff;
+      font: inherit;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(31, 35, 40, 0.08);
+      transition: border-color 0.15s ease;
+    }
+    .film-thumb.active { border-color: var(--accent); }
+    .film-thumb img { height: 100%; width: auto; display: block; pointer-events: none; }
     /* ---- Lightbox ---- */
     .lightbox {
       position: fixed; inset: 0;
@@ -183,12 +198,10 @@
     .lightbox-title { font-weight: 600; margin: 0 0 6px; }
     .lightbox-desc { color: var(--muted); font-size: 0.95rem; line-height: 1.5; margin: 0; }
     @media (max-width: 600px) {
-      .orbit-scene { height: 600px; }
-      .orbit-layer { height: 240px; }
-      .body-holder img { height: 160px; }
-      .orbit-card { width: 86px; height: 118px; margin: -59px 0 0 -43px; }
-      #orbitTop .orbit-card { width: 72px; height: 98px; margin: -49px 0 0 -36px; }
-      #orbitTop { top: -18px; }
+      .stage { gap: 16px; }
+      .stage-col img { height: 260px; }
+      .garment-thumb { width: 60px; height: 80px; }
+      .film-thumb { height: 84px; }
     }
     footer {
       border-top: 1px solid var(--border);
@@ -244,20 +257,33 @@
     </p>
   </section>
 
-  <section id="orbit-demo">
+  <section id="explorer-demo">
     <h2>GarmentCodeVTON Explorer</h2>
-    <p class="demo-hint"><strong>DRAG</strong> to rotate &middot; <strong>CLICK</strong> the front garment or the body to <strong>ZOOM IN</strong></p>
-    <div class="orbit-scene" id="orbitScene">
-      <div class="orbit-layer" id="orbitTop"></div>
-      <div class="center-stage">
-        <button class="nav-btn" id="prevBody" aria-label="Previous body">&#9664;</button>
-        <div class="body-holder">
-          <img id="bodyImg" src="assets/demo/body_0.webp?v=7" alt="SMPL-X body">
-          <div class="body-label" id="bodyLabel">Body 1 / 10 &middot; pose0</div>
+    <p class="demo-hint">Pick a garment, pose, and body shape &middot; <strong>CLICK</strong> any preview to <strong>ZOOM IN</strong></p>
+    <div class="demo-panel">
+      <div class="garment-row" id="garmentRow"></div>
+      <div class="pose-row" id="poseRow"></div>
+      <div class="stage">
+        <div class="stage-col">
+          <img id="garmentImg" src="assets/demo/garment_0.webp?v=8" alt="Reference garment">
+          <div class="stage-label">Garment</div>
         </div>
+        <div class="stage-col">
+          <img id="bodyImg" src="assets/demo/body_0_p1.webp?v=8" alt="SMPL-X body">
+          <div class="stage-label" id="bodyLabel">Body 1 / 10</div>
+        </div>
+        <div class="stage-col">
+          <img id="wearImg" src="assets/demo/wear_0_0_p1.webp?v=8" alt="Simulated try-on">
+          <div class="stage-label">Try-on</div>
+        </div>
+      </div>
+      <div class="body-control">
+        <button class="nav-btn" id="prevBody" aria-label="Previous body">&#9664;</button>
+        <input type="range" id="bodySlider" min="0" max="9" value="0" aria-label="Body shape">
         <button class="nav-btn" id="nextBody" aria-label="Next body">&#9654;</button>
       </div>
-      <div class="orbit-layer" id="orbitBottom"></div>
+      <p class="body-caption" id="bodyCaption">female4 &middot; pose1</p>
+      <div class="filmstrip" id="filmstrip"></div>
     </div>
     <div class="lightbox" id="lightbox">
       <div class="lightbox-panel" id="lightboxPanel">
@@ -352,25 +378,27 @@
 
 <script>
 (function () {
-  var DEMO_VER = '7';
+  var DEMO_VER = '8';
   var demoAsset = function (path) { return path + '?v=' + DEMO_VER; };
   var N_BODIES = 10, N_OUTFITS = 5;
-  var TWO_PI = Math.PI * 2, STEP = TWO_PI / N_OUTFITS;
-  var person = 0;
-  var angle = 0, targetAngle = 0;
-  var dragging = false, dragStartX = 0, dragStartAngle = 0, dragMoved = false;
+  var POSES = [1, 3, 7];
+  var person = 0, garment = 0, pose = 1;
 
-  var scene = document.getElementById('orbitScene');
-  var topLayer = document.getElementById('orbitTop');
-  var bottomLayer = document.getElementById('orbitBottom');
+  var garmentImg = document.getElementById('garmentImg');
   var bodyImg = document.getElementById('bodyImg');
+  var wearImg = document.getElementById('wearImg');
   var bodyLabel = document.getElementById('bodyLabel');
+  var bodyCaption = document.getElementById('bodyCaption');
+  var bodySlider = document.getElementById('bodySlider');
+  var garmentRow = document.getElementById('garmentRow');
+  var poseRow = document.getElementById('poseRow');
+  var filmstrip = document.getElementById('filmstrip');
 
-  // ---- Prompts (mirrors FitVTON/dataset.py) ----
   // Slot -> dataset body index (femaleN used to render body_/wear_ assets).
   var BODY_IDX = [4, 1, 3, 2, 0, 6, 9, 5, 7, 8];
   var BODY_WIDTHS = ['slim', 'average', 'plus-size', 'heavy'];
   var BODY_HEIGHTS = ['short', 'medium-short', 'medium-tall', 'tall'];
+  function bodyName(slot) { return 'female' + BODY_IDX[slot]; }
   function bodyPrompt(slot) {
     var idx = BODY_IDX[slot];
     var shape = BODY_WIDTHS[idx % 4];
@@ -393,6 +421,10 @@
     'The cloth is a long-length upper garment with a short-length lower garment. The wearing style is untucked.'
   ];
 
+  function garmentPath(g) { return 'assets/demo/garment_' + g + '.webp'; }
+  function bodyPath(p, po) { return 'assets/demo/body_' + p + '_p' + po + '.webp'; }
+  function wearPath(p, g, po) { return 'assets/demo/wear_' + p + '_' + g + '_p' + po + '.webp'; }
+
   // ---- Lightbox ----
   var lightbox = document.getElementById('lightbox');
   var lightboxPanel = document.getElementById('lightboxPanel');
@@ -413,166 +445,149 @@
   });
   window.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeLightbox(); });
 
-  function makeCards(layer, prefix) {
-    var cards = [];
-    for (var i = 0; i < N_OUTFITS; i++) {
-      var card = document.createElement('div');
-      card.className = 'orbit-card';
-      card.dataset.index = i;
-      var img = document.createElement('img');
-      img.src = prefix(i);
-      img.alt = '';
-      card.appendChild(img);
-      layer.appendChild(card);
-      cards.push(card);
-    }
-    return cards;
+  var garmentThumbs = [];
+  for (var g = 0; g < N_OUTFITS; g++) {
+    var thumb = document.createElement('button');
+    thumb.type = 'button';
+    thumb.className = 'garment-thumb' + (g === 0 ? ' active' : '');
+    thumb.dataset.index = g;
+    thumb.setAttribute('aria-label', GARMENT_TITLES[g]);
+    var img = document.createElement('img');
+    img.src = demoAsset(garmentPath(g));
+    img.alt = '';
+    thumb.appendChild(img);
+    thumb.addEventListener('click', function () { setGarment(parseInt(this.dataset.index, 10)); });
+    garmentRow.appendChild(thumb);
+    garmentThumbs.push(thumb);
   }
 
-  var topCards = makeCards(topLayer, function (i) { return demoAsset('assets/demo/garment_' + i + '.webp'); });
-  var bottomCards = makeCards(bottomLayer, function (i) { return demoAsset('assets/demo/wear_' + person + '_' + i + '.webp'); });
+  var poseBtns = [];
+  POSES.forEach(function (po) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pose-btn' + (po === pose ? ' active' : '');
+    btn.dataset.pose = po;
+    btn.textContent = 'pose' + po;
+    btn.addEventListener('click', function () { setPose(parseInt(this.dataset.pose, 10)); });
+    poseRow.appendChild(btn);
+    poseBtns.push(btn);
+  });
 
-  // Preload all assets
+  var filmThumbs = [];
   for (var n = 0; n < N_BODIES; n++) {
-    new Image().src = demoAsset('assets/demo/body_' + n + '.webp');
-    for (var k = 0; k < N_OUTFITS; k++) new Image().src = demoAsset('assets/demo/wear_' + n + '_' + k + '.webp');
+    var film = document.createElement('button');
+    film.type = 'button';
+    film.className = 'film-thumb' + (n === 0 ? ' active' : '');
+    film.dataset.index = n;
+    film.setAttribute('aria-label', 'Body ' + (n + 1));
+    var filmImg = document.createElement('img');
+    filmImg.src = demoAsset(bodyPath(n, pose));
+    filmImg.alt = '';
+    film.appendChild(filmImg);
+    film.addEventListener('click', function () { setPerson(parseInt(this.dataset.index, 10)); });
+    filmstrip.appendChild(film);
+    filmThumbs.push(film);
   }
 
-  function layoutOrbit(cards, opts) {
-    var w = scene.clientWidth;
-    var rx = Math.min(w * opts.rxFactor, opts.rxMax);
-    for (var i = 0; i < N_OUTFITS; i++) {
-      var th = angle + i * STEP;
-      var s = Math.sin(th), c = Math.cos(th);
-      var depth = (c + 1) / 2;
-      var scale = opts.scaleMin + depth * opts.scaleRange;
-      var x = s * rx;
-      var y = c * opts.ry + opts.yBias;
-      var op = opts.opacityMin + depth * opts.opacityRange;
-      var transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) scale(' + scale.toFixed(3) + ')';
-      var z = Math.round(depth * opts.zMax);
-      cards[i].style.transform = transform;
-      cards[i].style.zIndex = z;
-      cards[i].style.opacity = op;
-    }
+  function setActive(list, cls, match) {
+    list.forEach(function (el) { el.classList.toggle(cls, match(el)); });
   }
 
-  function layout() {
-    layoutOrbit(topCards, {
-      rxFactor: 0.40, rxMax: 360,
-      ry: 16, yBias: -42,
-      scaleMin: 0.48, scaleRange: 0.52,
-      opacityMin: 0.42, opacityRange: 0.50,
-      zMax: 300
+  function updateLabels() {
+    bodyLabel.textContent = 'Body ' + (person + 1) + ' / ' + N_BODIES;
+    bodyCaption.textContent = bodyName(person) + ' \u00b7 pose' + pose;
+    bodySlider.value = person;
+  }
+
+  function updateStage() {
+    garmentImg.src = demoAsset(garmentPath(garment));
+    bodyImg.src = demoAsset(bodyPath(person, pose));
+    wearImg.src = demoAsset(wearPath(person, garment, pose));
+    filmThumbs.forEach(function (film, i) {
+      film.querySelector('img').src = demoAsset(bodyPath(i, pose));
     });
-    layoutOrbit(bottomCards, {
-      rxFactor: 0.40, rxMax: 360,
-      ry: 38, yBias: 0,
-      scaleMin: 0.55, scaleRange: 0.95,
-      opacityMin: 0.45, opacityRange: 0.55,
-      zMax: 400
-    });
+    setActive(garmentThumbs, 'active', function (el) { return parseInt(el.dataset.index, 10) === garment; });
+    setActive(poseBtns, 'active', function (el) { return parseInt(el.dataset.pose, 10) === pose; });
+    setActive(filmThumbs, 'active', function (el) { return parseInt(el.dataset.index, 10) === person; });
+    updateLabels();
   }
 
-  function animate() {
-    if (!dragging) {
-      var diff = targetAngle - angle;
-      if (Math.abs(diff) > 0.0005) angle += diff * 0.14;
-      else angle = targetAngle;
-    }
-    layout();
-    requestAnimationFrame(animate);
+  function setGarment(g) {
+    garment = (g + N_OUTFITS) % N_OUTFITS;
+    garmentImg.style.opacity = 0;
+    wearImg.style.opacity = 0;
+    setTimeout(function () {
+      garmentImg.src = demoAsset(garmentPath(garment));
+      wearImg.src = demoAsset(wearPath(person, garment, pose));
+      garmentImg.style.opacity = 1;
+      wearImg.style.opacity = 1;
+    }, 120);
+    setActive(garmentThumbs, 'active', function (el) { return parseInt(el.dataset.index, 10) === garment; });
   }
 
-  function snap() {
-    targetAngle = Math.round(angle / STEP) * STEP;
-  }
-
-  function onDown(e) {
-    dragging = true; dragMoved = false;
-    dragStartX = (e.touches ? e.touches[0].clientX : e.clientX);
-    dragStartAngle = angle;
-    topLayer.classList.add('dragging');
-    bottomLayer.classList.add('dragging');
-  }
-  function onMove(e) {
-    if (!dragging) return;
-    var x = (e.touches ? e.touches[0].clientX : e.clientX);
-    var dx = x - dragStartX;
-    if (Math.abs(dx) > 4) dragMoved = true;
-    angle = dragStartAngle + dx / 160;
-    if (e.cancelable && dragMoved) e.preventDefault();
-  }
-  function onUp() {
-    if (!dragging) return;
-    dragging = false;
-    topLayer.classList.remove('dragging');
-    bottomLayer.classList.remove('dragging');
-    snap();
-  }
-
-  [topLayer, bottomLayer].forEach(function (layer) {
-    layer.addEventListener('mousedown', onDown);
-    layer.addEventListener('touchstart', onDown, { passive: true });
-  });
-  window.addEventListener('mousemove', onMove);
-  window.addEventListener('touchmove', onMove, { passive: false });
-  window.addEventListener('mouseup', onUp);
-  window.addEventListener('touchend', onUp);
-
-  // Click a card -> rotate it to front (unless it was a drag).
-  // If the card is already at front, fire onFrontClick (zoom + prompt).
-  function bindCardClicks(cards, onFrontClick) {
-    cards.forEach(function (card) {
-      card.addEventListener('click', function () {
-        if (dragMoved) return;
-        var i = parseInt(card.dataset.index, 10);
-        if (onFrontClick && Math.cos(angle + i * STEP) > 0.92) {
-          onFrontClick(i);
-          return;
-        }
-        // bring card i to front: angle + i*STEP = 0 (mod 2pi)
-        var desired = -i * STEP;
-        var k = Math.round((angle - desired) / TWO_PI);
-        targetAngle = desired + k * TWO_PI;
+  function setPose(po) {
+    if (pose === po) return;
+    pose = po;
+    bodyImg.style.opacity = 0;
+    wearImg.style.opacity = 0;
+    setTimeout(function () {
+      bodyImg.src = demoAsset(bodyPath(person, pose));
+      wearImg.src = demoAsset(wearPath(person, garment, pose));
+      filmThumbs.forEach(function (film, i) {
+        film.querySelector('img').src = demoAsset(bodyPath(i, pose));
       });
-    });
+      bodyImg.style.opacity = 1;
+      wearImg.style.opacity = 1;
+    }, 120);
+    setActive(poseBtns, 'active', function (el) { return parseInt(el.dataset.pose, 10) === pose; });
+    updateLabels();
   }
-  bindCardClicks(topCards, function (i) {
-    openLightbox(
-      demoAsset('assets/demo/garment_' + i + '.webp'),
-      GARMENT_TITLES[i],
-      GARMENT_PROMPTS[i]
-    );
-  });
-  bindCardClicks(bottomCards);
-
-  // Click the center body -> zoom + body-shape prompt
-  bodyImg.addEventListener('click', function () {
-    openLightbox(
-      demoAsset('assets/demo/body_' + person + '.webp'),
-      'Body ' + (person + 1) + ' / ' + N_BODIES + ' \u00b7 pose' + person,
-      bodyPrompt(person)
-    );
-  });
 
   function setPerson(p) {
     person = (p + N_BODIES) % N_BODIES;
     bodyImg.style.opacity = 0;
+    wearImg.style.opacity = 0;
     setTimeout(function () {
-      bodyImg.src = demoAsset('assets/demo/body_' + person + '.webp');
-      bottomCards.forEach(function (card, i) {
-        card.querySelector('img').src = demoAsset('assets/demo/wear_' + person + '_' + i + '.webp');
-      });
-      bodyLabel.textContent = 'Body ' + (person + 1) + ' / ' + N_BODIES + ' · pose' + person;
+      bodyImg.src = demoAsset(bodyPath(person, pose));
+      wearImg.src = demoAsset(wearPath(person, garment, pose));
       bodyImg.style.opacity = 1;
-    }, 160);
+      wearImg.style.opacity = 1;
+    }, 120);
+    setActive(filmThumbs, 'active', function (el) { return parseInt(el.dataset.index, 10) === person; });
+    updateLabels();
   }
+
+  garmentImg.addEventListener('click', function () {
+    openLightbox(demoAsset(garmentPath(garment)), GARMENT_TITLES[garment], GARMENT_PROMPTS[garment]);
+  });
+  bodyImg.addEventListener('click', function () {
+    openLightbox(
+      demoAsset(bodyPath(person, pose)),
+      'Body ' + (person + 1) + ' / ' + N_BODIES + ' \u00b7 ' + bodyName(person) + ' \u00b7 pose' + pose,
+      bodyPrompt(person)
+    );
+  });
+  wearImg.addEventListener('click', function () {
+    openLightbox(
+      demoAsset(wearPath(person, garment, pose)),
+      GARMENT_TITLES[garment] + ' on ' + bodyName(person),
+      bodyPrompt(person) + ' ' + GARMENT_PROMPTS[garment]
+    );
+  });
+
   document.getElementById('prevBody').addEventListener('click', function () { setPerson(person - 1); });
   document.getElementById('nextBody').addEventListener('click', function () { setPerson(person + 1); });
+  bodySlider.addEventListener('input', function () { setPerson(parseInt(this.value, 10)); });
 
-  window.addEventListener('resize', layout);
-  animate();
+  for (var b = 0; b < N_BODIES; b++) {
+    POSES.forEach(function (po) {
+      new Image().src = demoAsset(bodyPath(b, po));
+      for (var k = 0; k < N_OUTFITS; k++) new Image().src = demoAsset(wearPath(b, k, po));
+    });
+  }
+  for (var j = 0; j < N_OUTFITS; j++) new Image().src = demoAsset(garmentPath(j));
+
+  updateStage();
 })();
 </script>
 

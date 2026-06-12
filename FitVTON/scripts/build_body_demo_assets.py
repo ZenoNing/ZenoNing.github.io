@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Regenerate Explorer demo assets with consistent body shapes and poses.
 
-Each Explorer slot uses one body and one pose; center bodies and bottom-orbit
-try-ons are generated from the same body/pose pair.
+Each Explorer slot maps to one GarmentCode body. Bodies and try-ons are exported
+for a fixed pose set (default pose1, pose3, pose7) so the page can switch pose
+independently from body shape.
 """
 
 from __future__ import annotations
@@ -27,8 +28,7 @@ BODY_SOURCES = {
     9: "female8",
 }
 
-# Explorer slot i uses pose{i} (pose0 .. pose9).
-POSE_SOURCES = {slot: f"pose{slot}" for slot in BODY_SOURCES}
+DEFAULT_POSE_IDS = (1, 3, 7)
 
 # Must match top-orbit garment_0..4.webp (visual asset -> try-on unit/mode).
 OUTFIT_SOURCES = [
@@ -66,6 +66,13 @@ def png_to_webp(
     im.save(webp_path, "WEBP", quality=quality, method=6)
 
 
+def parse_pose_ids(raw: str) -> tuple[int, ...]:
+    poses = tuple(int(part.strip()) for part in raw.split(",") if part.strip())
+    if not poses:
+        raise SystemExit("At least one pose id is required.")
+    return poses
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -86,42 +93,52 @@ def main() -> None:
         type=Path,
         default=Path(__file__).resolve().parents[1] / "assets" / "demo",
     )
+    parser.add_argument(
+        "--poses",
+        type=str,
+        default=",".join(str(p) for p in DEFAULT_POSE_IDS),
+        help="Comma-separated pose ids, e.g. 1,3,7 -> pose1/pose3/pose7",
+    )
     parser.add_argument("--skip-wear", action="store_true")
     parser.add_argument("--wear-only", action="store_true")
     args = parser.parse_args()
 
+    pose_ids = parse_pose_ids(args.poses)
+
     if not args.wear_only:
         for slot, body_name in BODY_SOURCES.items():
-            pose_id = POSE_SOURCES[slot]
-            body_png = args.body_render_root / body_name / pose_id / "render_front.png"
-            if not body_png.exists():
-                raise SystemExit(f"Missing body render: {body_png}")
-            body_out = args.output_dir / f"body_{slot}.webp"
-            png_to_webp(body_png, body_out)
-            print(f"body_{slot}.webp <- {body_name}/{pose_id}/render_front.png")
+            for pose_id in pose_ids:
+                pose_name = f"pose{pose_id}"
+                body_png = args.body_render_root / body_name / pose_name / "render_front.png"
+                if not body_png.exists():
+                    raise SystemExit(f"Missing body render: {body_png}")
+                body_out = args.output_dir / f"body_{slot}_p{pose_id}.webp"
+                png_to_webp(body_png, body_out)
+                print(f"body_{slot}_p{pose_id}.webp <- {body_name}/{pose_name}/render_front.png")
 
     if args.skip_wear:
         return
 
     for slot, body_name in BODY_SOURCES.items():
-        pose_id = POSE_SOURCES[slot]
-        for outfit_idx, outfit_path in enumerate(OUTFIT_SOURCES):
-            wear_png = (
-                args.dataset_root
-                / "female"
-                / body_name
-                / outfit_path
-                / pose_id
-                / "render_front.png"
-            )
-            if not wear_png.exists():
-                raise SystemExit(f"Missing try-on render: {wear_png}")
-            wear_out = args.output_dir / f"wear_{slot}_{outfit_idx}.webp"
-            png_to_webp(wear_png, wear_out)
-            print(
-                f"wear_{slot}_{outfit_idx}.webp <- "
-                f"female/{body_name}/{outfit_path}/{pose_id}"
-            )
+        for pose_id in pose_ids:
+            pose_name = f"pose{pose_id}"
+            for outfit_idx, outfit_path in enumerate(OUTFIT_SOURCES):
+                wear_png = (
+                    args.dataset_root
+                    / "female"
+                    / body_name
+                    / outfit_path
+                    / pose_name
+                    / "render_front.png"
+                )
+                if not wear_png.exists():
+                    raise SystemExit(f"Missing try-on render: {wear_png}")
+                wear_out = args.output_dir / f"wear_{slot}_{outfit_idx}_p{pose_id}.webp"
+                png_to_webp(wear_png, wear_out)
+                print(
+                    f"wear_{slot}_{outfit_idx}_p{pose_id}.webp <- "
+                    f"female/{body_name}/{outfit_path}/{pose_name}"
+                )
 
 
 if __name__ == "__main__":
