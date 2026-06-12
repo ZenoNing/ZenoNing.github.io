@@ -203,6 +203,157 @@
       transform: scale(1.04);
     }
     .film-thumb img { height: 100%; width: auto; display: block; pointer-events: none; }
+    /* ---- Real-person fit evaluation demo ---- */
+    .fe-controls {
+      display: flex;
+      gap: 28px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .fe-group { text-align: center; }
+    .fe-group-label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+    }
+    .fe-options { display: flex; gap: 10px; justify-content: center; }
+    .fe-option {
+      width: 72px;
+      padding: 5px 5px 3px;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      background: #fff;
+      font: inherit;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(31, 35, 40, 0.08);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    }
+    .fe-option:hover { transform: translateY(-2px); }
+    .fe-option.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.12);
+    }
+    .fe-option img {
+      width: 100%; height: 78px;
+      object-fit: contain; object-position: center center;
+      display: block; pointer-events: none;
+    }
+    .fe-option-name { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+    .fe-stage { display: flex; gap: 18px; align-items: stretch; }
+    .fe-images {
+      display: flex;
+      gap: 14px;
+      align-items: flex-end;
+      justify-content: center;
+      flex: 0 0 auto;
+    }
+    .fe-img-card { text-align: center; }
+    .fe-img-box {
+      position: relative;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      overflow: hidden;
+    }
+    .fe-img-gt .fe-img-box { width: 168px; height: 224px; }
+    .fe-img-pred .fe-img-box { width: 240px; height: 320px; }
+    .fe-img-box img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      cursor: zoom-in;
+      opacity: 0;
+      transform: scale(1.02);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+    .fe-img-box.show img { opacity: 1; transform: scale(1); }
+    .fe-wait {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      background: var(--bg-soft);
+      transition: opacity 0.3s ease;
+    }
+    .fe-img-box.show .fe-wait { opacity: 0; pointer-events: none; }
+    .fe-wait.waiting .fe-spinner { display: block; }
+    .fe-spinner {
+      display: none;
+      width: 22px; height: 22px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: fe-spin 0.8s linear infinite;
+    }
+    @keyframes fe-spin { to { transform: rotate(360deg); } }
+    .fe-img-label { color: var(--muted); font-size: 0.8rem; margin-top: 6px; line-height: 1.35; }
+    .fe-img-label strong { color: var(--text); }
+    .fe-scores {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .fe-card {
+      border: 1.5px solid;
+      border-radius: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .fe-card.show { opacity: 1; transform: translateY(0); }
+    .fe-card-gb { border-color: #57a05b; background: #f2f8f2; }
+    .fe-card-tl { border-color: #6b9bd2; background: #eef4fb; }
+    .fe-card-sc { border-color: #e08bb0; background: #fdf1f6; }
+    .fe-card-lf { border-color: #a98fd6; background: #f6f2fb; }
+    .fe-card-head { display: flex; align-items: baseline; gap: 8px; }
+    .fe-card-abbr { font-weight: 700; font-size: 1.05rem; }
+    .fe-card-gb .fe-card-abbr { color: #2e7d32; }
+    .fe-card-tl .fe-card-abbr { color: #0a66c2; }
+    .fe-card-sc .fe-card-abbr { color: #c2185b; }
+    .fe-card-lf .fe-card-abbr { color: #5e35b1; }
+    .fe-card-score { font-weight: 700; font-size: 1.05rem; }
+    .fe-card-name { color: var(--muted); font-size: 0.78rem; margin: 0 0 3px; }
+    .fe-card-text {
+      font-size: 0.8rem; line-height: 1.45; margin: 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .fe-card.expanded .fe-card-text { display: block; -webkit-line-clamp: unset; line-clamp: none; }
+    .fe-overall {
+      margin-top: 16px;
+      border: 1.5px solid #e6b84c;
+      background: #fdf8ec;
+      border-radius: 12px;
+      padding: 12px 18px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .fe-overall.show { opacity: 1; transform: translateY(0); }
+    .fe-overall-score { font-weight: 700; font-size: 1.25rem; }
+    .fe-overall-note { color: var(--muted); font-size: 0.78rem; margin-bottom: 6px; }
+    .fe-overall-summary { font-size: 0.86rem; line-height: 1.5; margin: 0; text-align: left; }
+    @media (max-width: 760px) {
+      .fe-stage { flex-direction: column; align-items: center; }
+      .fe-scores { width: 100%; }
+      .fe-img-gt .fe-img-box { width: 132px; height: 176px; }
+      .fe-img-pred .fe-img-box { width: 192px; height: 256px; }
+    }
     /* ---- Lightbox ---- */
     .lightbox {
       position: fixed; inset: 0;
@@ -360,6 +511,68 @@
       <li><strong>Texture rectification.</strong> Stage II updates image LoRA on VITON-HD / DressCode pseudo-triplets; text LoRA frozen.</li>
       <li><strong>FittingEffect3K.</strong> Real-world benchmark (3,350 triplets) with VLM fit scoring aligned with human preference.</li>
     </ul>
+  </section>
+
+  <section id="fitting-demo">
+    <h2>Real-Person Try-On &amp; VLM Fit Evaluation</h2>
+    <p class="demo-hint">Pick a <strong>source person</strong> and a <strong>garment</strong> &middot; FitVTON generates the try-on, then the real-wearing reference and VLM fit scores appear &middot; <strong>CLICK</strong> a score card to expand</p>
+    <div class="demo-panel">
+      <div class="fe-controls">
+        <div class="fe-group">
+          <div class="fe-group-label">Source person</div>
+          <div class="fe-options" id="feSrcRow"></div>
+        </div>
+        <div class="fe-group">
+          <div class="fe-group-label">Garment</div>
+          <div class="fe-options" id="feClothRow"></div>
+        </div>
+      </div>
+      <div class="fe-stage">
+        <div class="fe-images">
+          <div class="fe-img-card fe-img-gt">
+            <div class="fe-img-box" id="feGtBox">
+              <img id="feGtImg" src="" alt="Real try-on reference">
+              <div class="fe-wait" id="feGtWait"><div class="fe-spinner"></div><span id="feGtWaitText">Waiting&hellip;</span></div>
+            </div>
+            <div class="fe-img-label"><strong>Image A</strong><br>Real try-on reference</div>
+          </div>
+          <div class="fe-img-card fe-img-pred">
+            <div class="fe-img-box" id="fePredBox">
+              <img id="fePredImg" src="" alt="FitVTON generated try-on">
+              <div class="fe-wait" id="fePredWait"><div class="fe-spinner"></div><span id="fePredWaitText">Pick a person &amp; garment</span></div>
+            </div>
+            <div class="fe-img-label"><strong>Image B</strong><br>FitVTON generated result</div>
+          </div>
+        </div>
+        <div class="fe-scores">
+          <div class="fe-card fe-card-gb" id="feCardGb">
+            <div class="fe-card-head"><span class="fe-card-abbr">GB</span><span class="fe-card-score"></span></div>
+            <div class="fe-card-name">Garment&ndash;Body Alignment</div>
+            <p class="fe-card-text"></p>
+          </div>
+          <div class="fe-card fe-card-tl" id="feCardTl">
+            <div class="fe-card-head"><span class="fe-card-abbr">T/L</span><span class="fe-card-score"></span></div>
+            <div class="fe-card-name">Tightness / Looseness Consistency</div>
+            <p class="fe-card-text"></p>
+          </div>
+          <div class="fe-card fe-card-sc" id="feCardSc">
+            <div class="fe-card-head"><span class="fe-card-abbr">SC</span><span class="fe-card-score"></span></div>
+            <div class="fe-card-name">Silhouette Consistency</div>
+            <p class="fe-card-text"></p>
+          </div>
+          <div class="fe-card fe-card-lf" id="feCardLf">
+            <div class="fe-card-head"><span class="fe-card-abbr">LF</span><span class="fe-card-score"></span></div>
+            <div class="fe-card-name">Local Fit Artifacts</div>
+            <p class="fe-card-text"></p>
+          </div>
+        </div>
+      </div>
+      <div class="fe-overall" id="feOverall">
+        <div class="fe-overall-score" id="feOverallScore"></div>
+        <div class="fe-overall-note">Average of GB, T/L, SC, and LF &middot; scored by the VLM-driven fit-oriented evaluator (GPT, 1&ndash;5)</div>
+        <p class="fe-overall-summary" id="feOverallSummary"></p>
+      </div>
+    </div>
   </section>
 
   <section>
@@ -734,6 +947,156 @@
   for (var j = 0; j < N_OUTFITS; j++) new Image().src = demoAsset(garmentPath(j));
 
   updateStage();
+})();
+</script>
+
+<script src="assets/fitting/scores.js?v=1"></script>
+<script>
+(function () {
+  var BASE = 'assets/fitting/';
+  var VER = '?v=1';
+  var SOURCES = [
+    { id: 'f0', name: 'female_0', img: 'src_f0.webp' },
+    { id: 'f3', name: 'female_3', img: 'src_f3.webp' }
+  ];
+  var CLOTHES = [
+    { id: 'upper_1', name: 'Upper 1', img: 'cloth_upper_1.webp' },
+    { id: 'upper_2', name: 'Upper 2', img: 'cloth_upper_2.webp' },
+    { id: 'lower_1', name: 'Lower 1', img: 'cloth_lower_1.webp' },
+    { id: 'lower_2', name: 'Lower 2', img: 'cloth_lower_2.webp' }
+  ];
+  var DIMS = ['gb', 'tl', 'sc', 'lf'];
+
+  var srcRow = document.getElementById('feSrcRow');
+  var clothRow = document.getElementById('feClothRow');
+  var predBox = document.getElementById('fePredBox');
+  var gtBox = document.getElementById('feGtBox');
+  var predImg = document.getElementById('fePredImg');
+  var gtImg = document.getElementById('feGtImg');
+  var predWait = document.getElementById('fePredWait');
+  var gtWait = document.getElementById('feGtWait');
+  var predWaitText = document.getElementById('fePredWaitText');
+  var gtWaitText = document.getElementById('feGtWaitText');
+  var overall = document.getElementById('feOverall');
+  var overallScore = document.getElementById('feOverallScore');
+  var overallSummary = document.getElementById('feOverallSummary');
+  var cards = {};
+  DIMS.forEach(function (d) {
+    cards[d] = document.getElementById('feCard' + d.charAt(0).toUpperCase() + d.slice(1));
+    cards[d].addEventListener('click', function () { this.classList.toggle('expanded'); });
+  });
+
+  var lightbox = document.getElementById('lightbox');
+  var lightboxPanel = document.getElementById('lightboxPanel');
+  function feLightbox(src, title, desc) {
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightboxTitle').textContent = title;
+    document.getElementById('lightboxDesc').textContent = desc;
+    lightbox.classList.remove('open');
+    void lightbox.offsetWidth;
+    lightbox.classList.add('open');
+  }
+
+  var src = 'f0', cloth = 'upper_1', runToken = 0;
+
+  function makeOption(row, item, onPick) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'fe-option';
+    btn.dataset.id = item.id;
+    var img = document.createElement('img');
+    img.src = BASE + item.img + VER;
+    img.alt = item.name;
+    var name = document.createElement('div');
+    name.className = 'fe-option-name';
+    name.textContent = item.name;
+    btn.appendChild(img);
+    btn.appendChild(name);
+    btn.addEventListener('click', function () { onPick(item.id); });
+    row.appendChild(btn);
+    return btn;
+  }
+  var srcBtns = SOURCES.map(function (s) { return makeOption(srcRow, s, function (id) { src = id; run(); }); });
+  var clothBtns = CLOTHES.map(function (c) { return makeOption(clothRow, c, function (id) { cloth = id; run(); }); });
+
+  function markActive() {
+    srcBtns.forEach(function (b) { b.classList.toggle('active', b.dataset.id === src); });
+    clothBtns.forEach(function (b) { b.classList.toggle('active', b.dataset.id === cloth); });
+  }
+
+  function fillScores(entry) {
+    var sum = 0;
+    DIMS.forEach(function (d) {
+      sum += entry[d].score;
+      cards[d].querySelector('.fe-card-score').textContent = entry[d].score + '/5';
+      cards[d].querySelector('.fe-card-text').textContent = entry[d].text;
+      cards[d].classList.remove('expanded');
+    });
+    overallScore.textContent = 'Overall Fit Score = ' + (sum / DIMS.length).toFixed(2) + ' / 5';
+    overallSummary.textContent = entry.summary;
+  }
+
+  function run() {
+    var token = ++runToken;
+    var key = src + '_' + cloth;
+    var entry = window.FE_SCORES[key];
+    markActive();
+    fillScores(entry);
+
+    predBox.classList.remove('show');
+    gtBox.classList.remove('show');
+    overall.classList.remove('show');
+    DIMS.forEach(function (d) { cards[d].classList.remove('show'); });
+
+    predWait.classList.add('waiting');
+    predWaitText.textContent = 'Generating try-on\u2026';
+    gtWait.classList.remove('waiting');
+    gtWaitText.textContent = 'Waiting\u2026';
+
+    setTimeout(function () {
+      if (token !== runToken) return;
+      predImg.src = BASE + 'pred_' + key + '.webp' + VER;
+      predBox.classList.add('show');
+      gtWait.classList.add('waiting');
+      gtWaitText.textContent = 'Fetching reference\u2026';
+
+      setTimeout(function () {
+        if (token !== runToken) return;
+        gtImg.src = BASE + 'gt_' + key + '.webp' + VER;
+        gtBox.classList.add('show');
+
+        DIMS.forEach(function (d, i) {
+          setTimeout(function () {
+            if (token !== runToken) return;
+            cards[d].classList.add('show');
+          }, 250 + i * 200);
+        });
+        setTimeout(function () {
+          if (token !== runToken) return;
+          overall.classList.add('show');
+        }, 250 + DIMS.length * 200);
+      }, 800);
+    }, 1000);
+  }
+
+  predImg.addEventListener('click', function () {
+    var c = CLOTHES.filter(function (x) { return x.id === cloth; })[0];
+    feLightbox(predImg.src, 'FitVTON result \u00b7 ' + src.replace('f', 'female_') + ' + ' + c.name,
+      'Generated try-on (Image B) for ' + c.name.toLowerCase() + ' on ' + src.replace('f', 'female_') + '.');
+  });
+  gtImg.addEventListener('click', function () {
+    feLightbox(gtImg.src, 'Ground truth \u00b7 ' + src.replace('f', 'female_'),
+      'Real try-on reference photo (Image A) from FittingEffect3K.');
+  });
+
+  SOURCES.forEach(function (s) {
+    CLOTHES.forEach(function (c) {
+      new Image().src = BASE + 'pred_' + s.id + '_' + c.id + '.webp' + VER;
+      new Image().src = BASE + 'gt_' + s.id + '_' + c.id + '.webp' + VER;
+    });
+  });
+
+  run();
 })();
 </script>
 
