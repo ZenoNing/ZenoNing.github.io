@@ -115,8 +115,21 @@
     }
     .pose-btn:hover { background: var(--bg-soft); }
     .pose-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .stage { display: flex; justify-content: center; align-items: flex-end; gap: 28px; }
-    .stage-col { text-align: center; min-width: 0; }
+    .stage {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      align-items: end;
+      gap: 20px;
+      width: 100%;
+    }
+    .stage-col {
+      text-align: center;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+    }
     .stage-col img {
       height: 400px; width: auto; max-width: 100%;
       display: block; margin: 0 auto;
@@ -125,13 +138,8 @@
       transition: opacity 0.15s ease;
     }
     .stage-col-garment {
-      flex: 0 0 auto;
-      width: 150px;
       height: 400px;
-      display: flex;
-      flex-direction: column;
       justify-content: center;
-      align-items: center;
     }
     .stage-col-garment img {
       height: 320px;
@@ -559,7 +567,7 @@
   }
 
   function updateFilmActive() {
-    var centered = nearestPersonFromScroll();
+    var centered = scrollSyncing ? person : nearestPersonFromScroll();
     setActive(filmThumbs, 'active', function (el) {
       return parseInt(el.dataset.index, 10) === centered;
     });
@@ -637,8 +645,8 @@
       }, 120);
     }
     updateLabels();
-    updateFilmActive();
     if (!fromScroll) scrollToPerson(person, true);
+    updateFilmActive();
   }
 
   function onFilmstripScroll() {
