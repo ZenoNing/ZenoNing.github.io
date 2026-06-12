@@ -108,7 +108,7 @@
     }
     .pose-btn:hover { background: var(--bg-soft); }
     .pose-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .stage { display: flex; justify-content: center; align-items: flex-end; gap: 34px; }
+    .stage { display: flex; justify-content: center; align-items: flex-end; gap: 28px; }
     .stage-col { text-align: center; min-width: 0; }
     .stage-col img {
       height: 400px; width: auto; max-width: 100%;
@@ -117,31 +117,51 @@
       filter: drop-shadow(0 6px 14px rgba(31, 35, 40, 0.16));
       transition: opacity 0.15s ease;
     }
+    .stage-col-garment img {
+      height: 290px;
+      max-width: 118px;
+      object-fit: contain;
+    }
     .stage-label { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
-    .body-control {
-      display: flex; align-items: center; gap: 12px;
-      max-width: 460px; margin: 16px auto 2px;
+    .body-caption { text-align: center; color: var(--muted); font-size: 0.9rem; margin: 14px 0 6px; }
+    .filmstrip-wrap {
+      position: relative;
+      margin: 0 -4px;
+      padding-top: 12px;
     }
-    .body-control input[type="range"] { flex: 1; accent-color: var(--accent); cursor: pointer; }
-    .nav-btn {
-      width: 34px; height: 34px; flex: 0 0 auto;
-      border-radius: 50%;
-      border: 1px solid var(--border);
-      background: #fff;
-      color: var(--text);
-      font-size: 0.8rem;
-      cursor: pointer;
-      box-shadow: 0 1px 4px rgba(31, 35, 40, 0.10);
-      transition: background 0.15s ease;
+    .filmstrip-pointer {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0; height: 0;
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 9px solid var(--accent);
+      z-index: 2;
+      pointer-events: none;
     }
-    .nav-btn:hover { background: var(--bg-soft); }
-    .body-caption { text-align: center; color: var(--muted); font-size: 0.9rem; margin: 4px 0 12px; }
+    .filmstrip-wrap::after {
+      content: '';
+      position: absolute;
+      top: 8px; bottom: 8px;
+      left: 50%;
+      width: 2px;
+      margin-left: -1px;
+      background: rgba(10, 102, 194, 0.22);
+      border-radius: 1px;
+      pointer-events: none;
+    }
     .filmstrip {
-      display: flex; gap: 6px;
+      display: flex; gap: 8px;
       overflow-x: auto;
-      padding: 6px 2px 8px;
-      justify-content: safe center;
+      padding: 10px 0 8px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      cursor: grab;
     }
+    .filmstrip.dragging { cursor: grabbing; scroll-snap-type: none; }
     .film-thumb {
       flex: 0 0 auto;
       height: 108px;
@@ -152,9 +172,15 @@
       font: inherit;
       cursor: pointer;
       box-shadow: 0 1px 3px rgba(31, 35, 40, 0.08);
-      transition: border-color 0.15s ease;
+      transition: border-color 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+      scroll-snap-align: center;
+      opacity: 0.72;
     }
-    .film-thumb.active { border-color: var(--accent); }
+    .film-thumb.active {
+      border-color: var(--accent);
+      opacity: 1;
+      transform: scale(1.04);
+    }
     .film-thumb img { height: 100%; width: auto; display: block; pointer-events: none; }
     /* ---- Lightbox ---- */
     .lightbox {
@@ -198,8 +224,9 @@
     .lightbox-title { font-weight: 600; margin: 0 0 6px; }
     .lightbox-desc { color: var(--muted); font-size: 0.95rem; line-height: 1.5; margin: 0; }
     @media (max-width: 600px) {
-      .stage { gap: 16px; }
+      .stage { gap: 14px; }
       .stage-col img { height: 260px; }
+      .stage-col-garment img { height: 200px; max-width: 88px; }
       .garment-thumb { width: 60px; height: 80px; }
       .film-thumb { height: 84px; }
     }
@@ -259,12 +286,12 @@
 
   <section id="explorer-demo">
     <h2>GarmentCodeVTON Explorer</h2>
-    <p class="demo-hint">Pick a garment, pose, and body shape &middot; <strong>CLICK</strong> any preview to <strong>ZOOM IN</strong></p>
+    <p class="demo-hint">Pick a garment and pose &middot; <strong>SCROLL</strong> the body strip to select a shape &middot; <strong>CLICK</strong> to <strong>ZOOM IN</strong></p>
     <div class="demo-panel">
       <div class="garment-row" id="garmentRow"></div>
       <div class="pose-row" id="poseRow"></div>
       <div class="stage">
-        <div class="stage-col">
+        <div class="stage-col stage-col-garment">
           <img id="garmentImg" src="assets/demo/garment_0.webp?v=8" alt="Reference garment">
           <div class="stage-label">Garment</div>
         </div>
@@ -277,13 +304,11 @@
           <div class="stage-label">Try-on</div>
         </div>
       </div>
-      <div class="body-control">
-        <button class="nav-btn" id="prevBody" aria-label="Previous body">&#9664;</button>
-        <input type="range" id="bodySlider" min="0" max="9" value="0" aria-label="Body shape">
-        <button class="nav-btn" id="nextBody" aria-label="Next body">&#9654;</button>
+      <p class="body-caption" id="bodyCaption">female4 &middot; Pose1</p>
+      <div class="filmstrip-wrap">
+        <div class="filmstrip-pointer" aria-hidden="true"></div>
+        <div class="filmstrip" id="filmstrip"></div>
       </div>
-      <p class="body-caption" id="bodyCaption">female4 &middot; pose1</p>
-      <div class="filmstrip" id="filmstrip"></div>
     </div>
     <div class="lightbox" id="lightbox">
       <div class="lightbox-panel" id="lightboxPanel">
@@ -382,17 +407,24 @@
   var demoAsset = function (path) { return path + '?v=' + DEMO_VER; };
   var N_BODIES = 10, N_OUTFITS = 5;
   var POSES = [1, 3, 7];
+  var POSE_NAMES = ['Pose1', 'Pose2', 'Pose3'];
   var person = 0, garment = 0, pose = 1;
+  var scrollSyncing = false;
+  var scrollTimer = null;
 
   var garmentImg = document.getElementById('garmentImg');
   var bodyImg = document.getElementById('bodyImg');
   var wearImg = document.getElementById('wearImg');
   var bodyLabel = document.getElementById('bodyLabel');
   var bodyCaption = document.getElementById('bodyCaption');
-  var bodySlider = document.getElementById('bodySlider');
   var garmentRow = document.getElementById('garmentRow');
   var poseRow = document.getElementById('poseRow');
   var filmstrip = document.getElementById('filmstrip');
+
+  function poseLabel(po) {
+    var i = POSES.indexOf(po);
+    return i >= 0 ? POSE_NAMES[i] : 'Pose' + po;
+  }
 
   // Slot -> dataset body index (femaleN used to render body_/wear_ assets).
   var BODY_IDX = [4, 1, 3, 2, 0, 6, 9, 5, 7, 8];
@@ -462,12 +494,12 @@
   }
 
   var poseBtns = [];
-  POSES.forEach(function (po) {
+  POSES.forEach(function (po, idx) {
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'pose-btn' + (po === pose ? ' active' : '');
     btn.dataset.pose = po;
-    btn.textContent = 'pose' + po;
+    btn.textContent = POSE_NAMES[idx];
     btn.addEventListener('click', function () { setPose(parseInt(this.dataset.pose, 10)); });
     poseRow.appendChild(btn);
     poseBtns.push(btn);
@@ -484,9 +516,49 @@
     filmImg.src = demoAsset(bodyPath(n, pose));
     filmImg.alt = '';
     film.appendChild(filmImg);
-    film.addEventListener('click', function () { setPerson(parseInt(this.dataset.index, 10)); });
+    film.addEventListener('click', function () {
+      scrollToPerson(parseInt(this.dataset.index, 10), true);
+    });
     filmstrip.appendChild(film);
     filmThumbs.push(film);
+  }
+
+  function updateFilmstripPadding() {
+    var pad = Math.max(0, filmstrip.clientWidth / 2 - 44);
+    filmstrip.style.paddingLeft = pad + 'px';
+    filmstrip.style.paddingRight = pad + 'px';
+  }
+
+  function scrollToPerson(p, smooth) {
+    var thumb = filmThumbs[p];
+    if (!thumb) return;
+    scrollSyncing = true;
+    var target = thumb.offsetLeft + thumb.offsetWidth / 2 - filmstrip.clientWidth / 2;
+    filmstrip.scrollTo({ left: target, behavior: smooth ? 'smooth' : 'auto' });
+    window.setTimeout(function () { scrollSyncing = false; }, smooth ? 320 : 0);
+  }
+
+  function nearestPersonFromScroll() {
+    var center = filmstrip.scrollLeft + filmstrip.clientWidth / 2;
+    var best = 0, bestDist = Infinity;
+    filmThumbs.forEach(function (thumb, i) {
+      var thumbCenter = thumb.offsetLeft + thumb.offsetWidth / 2;
+      var dist = Math.abs(thumbCenter - center);
+      if (dist < bestDist) { bestDist = dist; best = i; }
+    });
+    return best;
+  }
+
+  function updateFilmActive() {
+    var centered = nearestPersonFromScroll();
+    setActive(filmThumbs, 'active', function (el) {
+      return parseInt(el.dataset.index, 10) === centered;
+    });
+  }
+
+  function updateBodyWearImages() {
+    bodyImg.src = demoAsset(bodyPath(person, pose));
+    wearImg.src = demoAsset(wearPath(person, garment, pose));
   }
 
   function setActive(list, cls, match) {
@@ -495,21 +567,21 @@
 
   function updateLabels() {
     bodyLabel.textContent = 'Body ' + (person + 1) + ' / ' + N_BODIES;
-    bodyCaption.textContent = bodyName(person) + ' \u00b7 pose' + pose;
-    bodySlider.value = person;
+    bodyCaption.textContent = bodyName(person) + ' \u00b7 ' + poseLabel(pose);
   }
 
   function updateStage() {
     garmentImg.src = demoAsset(garmentPath(garment));
-    bodyImg.src = demoAsset(bodyPath(person, pose));
-    wearImg.src = demoAsset(wearPath(person, garment, pose));
+    updateBodyWearImages();
     filmThumbs.forEach(function (film, i) {
       film.querySelector('img').src = demoAsset(bodyPath(i, pose));
     });
     setActive(garmentThumbs, 'active', function (el) { return parseInt(el.dataset.index, 10) === garment; });
     setActive(poseBtns, 'active', function (el) { return parseInt(el.dataset.pose, 10) === pose; });
-    setActive(filmThumbs, 'active', function (el) { return parseInt(el.dataset.index, 10) === person; });
     updateLabels();
+    updateFilmstripPadding();
+    scrollToPerson(person, false);
+    updateFilmActive();
   }
 
   function setGarment(g) {
@@ -543,18 +615,33 @@
     updateLabels();
   }
 
-  function setPerson(p) {
+  function setPerson(p, fromScroll) {
     person = (p + N_BODIES) % N_BODIES;
-    bodyImg.style.opacity = 0;
-    wearImg.style.opacity = 0;
-    setTimeout(function () {
-      bodyImg.src = demoAsset(bodyPath(person, pose));
-      wearImg.src = demoAsset(wearPath(person, garment, pose));
-      bodyImg.style.opacity = 1;
-      wearImg.style.opacity = 1;
-    }, 120);
-    setActive(filmThumbs, 'active', function (el) { return parseInt(el.dataset.index, 10) === person; });
+    if (fromScroll) {
+      updateBodyWearImages();
+    } else {
+      bodyImg.style.opacity = 0;
+      wearImg.style.opacity = 0;
+      setTimeout(function () {
+        updateBodyWearImages();
+        bodyImg.style.opacity = 1;
+        wearImg.style.opacity = 1;
+      }, 120);
+    }
     updateLabels();
+    updateFilmActive();
+    if (!fromScroll) scrollToPerson(person, true);
+  }
+
+  function onFilmstripScroll() {
+    if (scrollSyncing) return;
+    updateFilmActive();
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(function () {
+      var p = nearestPersonFromScroll();
+      if (p !== person) setPerson(p, true);
+      else updateFilmActive();
+    }, 90);
   }
 
   garmentImg.addEventListener('click', function () {
@@ -563,7 +650,7 @@
   bodyImg.addEventListener('click', function () {
     openLightbox(
       demoAsset(bodyPath(person, pose)),
-      'Body ' + (person + 1) + ' / ' + N_BODIES + ' \u00b7 ' + bodyName(person) + ' \u00b7 pose' + pose,
+      'Body ' + (person + 1) + ' / ' + N_BODIES + ' \u00b7 ' + bodyName(person) + ' \u00b7 ' + poseLabel(pose),
       bodyPrompt(person)
     );
   });
@@ -575,9 +662,12 @@
     );
   });
 
-  document.getElementById('prevBody').addEventListener('click', function () { setPerson(person - 1); });
-  document.getElementById('nextBody').addEventListener('click', function () { setPerson(person + 1); });
-  bodySlider.addEventListener('input', function () { setPerson(parseInt(this.value, 10)); });
+  filmstrip.addEventListener('scroll', onFilmstripScroll, { passive: true });
+  window.addEventListener('resize', function () {
+    updateFilmstripPadding();
+    scrollToPerson(person, false);
+    updateFilmActive();
+  });
 
   for (var b = 0; b < N_BODIES; b++) {
     POSES.forEach(function (po) {
