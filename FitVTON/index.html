@@ -24,7 +24,10 @@
     }
     .container { max-width: var(--max-width); margin: 0 auto; padding: 0 20px; overflow-x: visible; }
     header { padding: 56px 0 8px; text-align: center; }
-    h1 { font-size: 2.1rem; line-height: 1.25; margin: 0 0 18px; }
+    h1 { font-size: 2.1rem; line-height: 1.25; margin: 0 0 12px; }
+    .affiliations { color: var(--muted); font-size: 1rem; margin: 0 0 16px; }
+    .affiliations a { color: var(--muted); text-decoration: none; }
+    .affiliations a:hover { color: var(--accent); text-decoration: underline; }
     .authors { font-size: 1.08rem; margin: 0 0 4px; }
     .authors a { color: var(--accent); text-decoration: none; }
     .authors a:hover { text-decoration: underline; }
@@ -732,6 +735,11 @@
 
 <header class="container">
   <h1>FitVTON: Fit-aware Virtual Try-On<br>via Body-Garment Size Control</h1>
+  <p class="affiliations">
+    <a href="https://www.polyu.edu.hk/comp/">PolyU COMP</a>
+    &nbsp;&middot;&nbsp;
+    <a href="https://www.nuvatech.me">Nuvatech</a>
+  </p>
   <p class="authors">
     <a href="https://zenoning.github.io/">Yiqun Ning</a>,
     <a href="https://github.com/Shenao-code">Ao Shen</a>,
